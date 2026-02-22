@@ -204,3 +204,19 @@ Some math: $E = mc^2$
         deck = parse_markdown(text)
         assert "$$E = mc^2$$" in deck.slides[0].content
         assert "$x^2$" in deck.slides[0].content
+
+    def test_footer_frontmatter_parsed(self):
+        text = "---\ntitle: Talk\nfooter:\n  left: Logo\n  center: My Talk\n  right: auto\n---\n\n## S1\n\nContent"
+        deck = parse_markdown(text)
+        assert deck.footer == {"left": "Logo", "center": "My Talk", "right": "auto"}
+
+    def test_footer_absent_is_none(self):
+        text = "---\ntitle: Talk\n---\n\n## S1\n\nContent"
+        deck = parse_markdown(text)
+        assert deck.footer is None
+
+    def test_footer_partial_keys(self):
+        text = "---\ntitle: Talk\nfooter:\n  right: auto\n---\n\n## S1\n\nContent"
+        deck = parse_markdown(text)
+        assert deck.footer == {"right": "auto"}
+        assert "left" not in deck.footer

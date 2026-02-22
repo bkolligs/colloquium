@@ -1,6 +1,7 @@
 /**
  * Colloquium Presentation Engine
  * 16:9 scaled canvas, keyboard/click/touch navigation, hash routing, fullscreen
+ * Slide picker + per-slide footer
  */
 class ColloquiumPresentation {
     constructor() {
@@ -15,12 +16,14 @@ class ColloquiumPresentation {
 
         if (this.totalSlides === 0) return;
 
-        this.counter = document.querySelector('.colloquium-counter');
         this.progressBar = document.querySelector('.colloquium-progress-bar');
+        this.pickerOpen = false;
 
         this._scaleDeck();
         window.addEventListener('resize', () => this._scaleDeck());
 
+        this._createPicker();
+        this._bindFooter();
         this._bindKeyboard();
         this._bindClick();
         this._bindTouch();
@@ -62,11 +65,6 @@ class ColloquiumPresentation {
         // Update hash
         history.replaceState(null, '', '#' + (this.currentIndex + 1));
 
-        // Update counter
-        if (this.counter) {
-            this.counter.textContent = (this.currentIndex + 1) + ' / ' + this.totalSlides;
-        }
-
         // Update progress bar
         if (this.progressBar) {
             const progress = this.totalSlides > 1
@@ -91,6 +89,91 @@ class ColloquiumPresentation {
     last() {
         this.goTo(this.totalSlides - 1);
     }
+
+    // --- Slide Picker ---
+
+    _getSlideTitle(slide, i) {
+        const h1 = slide.querySelector('h1');
+        if (h1) return h1.textContent;
+        const h2 = slide.querySelector('h2');
+        if (h2) return h2.textContent;
+        const img = slide.querySelector('img[alt]');
+        if (img && img.alt) return img.alt;
+        const text = slide.textContent.trim();
+        if (text) return text.substring(0, 50) + (text.length > 50 ? '…' : '');
+        return 'Slide ' + (i + 1);
+    }
+
+    _createPicker() {
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'colloquium-picker-overlay';
+
+        const picker = document.createElement('div');
+        picker.className = 'colloquium-picker';
+
+        this.pickerItems = [];
+
+        this.slides.forEach((slide, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'colloquium-picker-item';
+            btn.innerHTML =
+                '<span class="colloquium-picker-num">' + (i + 1) + '</span>' +
+                '<span>' + this._getSlideTitle(slide, i) + '</span>';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.goTo(i);
+                this._closePicker();
+            });
+            this.pickerItems.push(btn);
+            picker.appendChild(btn);
+        });
+
+        this.overlay.appendChild(picker);
+        document.body.appendChild(this.overlay);
+
+        // Close on click outside the picker card
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this._closePicker();
+            }
+        });
+    }
+
+    _openPicker() {
+        // Highlight current slide
+        this.pickerItems.forEach((btn, i) => {
+            btn.classList.toggle('current', i === this.currentIndex);
+        });
+        this.overlay.classList.add('active');
+        this.pickerOpen = true;
+
+        // Scroll current item into view
+        const current = this.pickerItems[this.currentIndex];
+        if (current) {
+            current.scrollIntoView({ block: 'center' });
+        }
+    }
+
+    _closePicker() {
+        this.overlay.classList.remove('active');
+        this.pickerOpen = false;
+    }
+
+    _bindFooter() {
+        // Attach click handler to all counter spans (one per slide)
+        document.querySelectorAll('.colloquium-counter').forEach((counter) => {
+            counter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.pickerOpen) {
+                    this._closePicker();
+                } else {
+                    this._openPicker();
+                }
+            });
+        });
+    }
+
+    // --- Navigation Bindings ---
 
     _bindKeyboard() {
         document.addEventListener('keydown', (e) => {
@@ -125,7 +208,9 @@ class ColloquiumPresentation {
                     this._toggleFullscreen();
                     break;
                 case 'Escape':
-                    if (document.fullscreenElement) {
+                    if (this.pickerOpen) {
+                        this._closePicker();
+                    } else if (document.fullscreenElement) {
                         document.exitFullscreen();
                     }
                     break;
@@ -135,8 +220,8 @@ class ColloquiumPresentation {
 
     _bindClick() {
         document.addEventListener('click', (e) => {
-            // Ignore clicks on links or interactive elements
-            if (e.target.closest('a, button, input, textarea, select')) return;
+            // Ignore clicks on links, interactive elements, footer, and picker
+            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay')) return;
 
             const x = e.clientX / window.innerWidth;
             if (x < 0.33) {

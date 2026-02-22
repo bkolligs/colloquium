@@ -109,6 +109,29 @@ class TestDeck:
             assert "Build Test" in html
             assert "Hello" in html
 
+    def test_footer_field(self):
+        deck = Deck(title="Test", footer={"left": "Logo", "right": "auto"})
+        assert deck.footer == {"left": "Logo", "right": "auto"}
+
+    def test_footer_default_none(self):
+        deck = Deck(title="Test")
+        assert deck.footer is None
+
+    def test_to_markdown_with_footer(self):
+        deck = Deck(title="Test", footer={"left": "ACME", "center": "Talk", "right": "auto"})
+        deck.add_slide(title="S1", content="C")
+        md = deck.to_markdown()
+        assert "footer:" in md
+        assert '  left: "ACME"' in md
+        assert '  center: "Talk"' in md
+        assert '  right: "auto"' in md
+
+    def test_to_markdown_no_footer(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="C")
+        md = deck.to_markdown()
+        assert "footer:" not in md
+
     def test_roundtrip(self):
         """Create a deck, serialize to markdown, parse back, verify."""
         from colloquium.parse import parse_markdown
@@ -123,3 +146,17 @@ class TestDeck:
         assert deck2.title == "Roundtrip"
         assert deck2.author == "Test"
         assert len(deck2.slides) == 2
+
+    def test_roundtrip_with_footer(self):
+        """Footer survives markdown roundtrip."""
+        from colloquium.parse import parse_markdown
+
+        deck = Deck(title="RT", footer={"left": "Logo", "right": "auto"})
+        deck.add_slide(title="S1", content="C")
+
+        md = deck.to_markdown()
+        deck2 = parse_markdown(md)
+
+        assert deck2.footer is not None
+        assert deck2.footer["left"] == "Logo"
+        assert deck2.footer["right"] == "auto"

@@ -343,28 +343,116 @@ html, body {
 .size-normal.active { font-size: 24px; }
 .size-large.active  { font-size: 28px; }
 
-/* ===== Navigation UI ===== */
-.colloquium-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 30px;
+/* ===== Footer (inside each slide) ===== */
+.colloquium-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 14px;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 13px;
     color: var(--colloquium-muted);
-    z-index: 100;
     user-select: none;
-    opacity: 0.6;
-    transition: opacity 0.3s;
 }
 
-.colloquium-nav:hover {
-    opacity: 1;
+.colloquium-footer-left,
+.colloquium-footer-center,
+.colloquium-footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.colloquium-footer-left   { justify-content: flex-start; }
+.colloquium-footer-center { justify-content: center; flex: 1; }
+.colloquium-footer-right  { justify-content: flex-end; }
+
+.colloquium-footer-logo {
+    height: 24px;
+    width: auto;
 }
 
 .colloquium-counter {
+    cursor: pointer;
     font-variant-numeric: tabular-nums;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.colloquium-counter:hover {
+    opacity: 1;
+}
+
+/* Inverted footer on section breaks */
+.slide--section-break .colloquium-footer {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== Slide Picker Overlay ===== */
+.colloquium-picker-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+}
+
+.colloquium-picker-overlay.active {
+    display: flex;
+}
+
+.colloquium-picker {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-height: 70vh;
+    overflow-y: auto;
+    width: 400px;
+    padding: 8px 0;
+}
+
+.colloquium-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    font-family: var(--colloquium-font-body);
+    font-size: 15px;
+    color: var(--colloquium-text);
+    cursor: pointer;
+    text-align: left;
+}
+
+.colloquium-picker-item:hover {
+    background: var(--colloquium-code-bg);
+}
+
+.colloquium-picker-item.current {
+    color: var(--colloquium-accent);
+    font-weight: 600;
+}
+
+.colloquium-picker-num {
+    min-width: 28px;
+    color: var(--colloquium-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    text-align: right;
+}
+
+.colloquium-picker-item.current .colloquium-picker-num {
+    color: var(--colloquium-accent);
 }
 
 /* ===== Progress Bar ===== */
@@ -421,9 +509,13 @@ html, body {
         page-break-after: auto;
     }
 
-    .colloquium-nav,
-    .colloquium-progress {
+    .colloquium-progress,
+    .colloquium-picker-overlay {
         display: none !important;
+    }
+
+    .colloquium-counter {
+        cursor: default;
     }
 
     a {

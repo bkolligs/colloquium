@@ -119,6 +119,7 @@ def parse_markdown(text: str) -> Deck:
         theme=metadata.get("theme", "default"),
         aspect_ratio=str(metadata.get("aspect_ratio", "16:9")),
         custom_css=metadata.get("custom_css", ""),
+        footer=metadata.get("footer", None),
     )
 
     # Split on --- slide separators (horizontal rules)

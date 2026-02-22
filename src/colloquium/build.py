@@ -46,7 +46,30 @@ def _render_markdown(text: str, md: MarkdownIt) -> str:
     return md.render(text)
 
 
-def _build_slide_html(slide: Slide, index: int, md: MarkdownIt) -> str:
+_IMAGE_URL_RE = re.compile(r"\.(png|jpg|jpeg|gif|svg|webp)$|^https?://", re.IGNORECASE)
+
+
+def _build_footer_html(footer: dict | None, index: int, total: int) -> str:
+    """Build the three-zone footer HTML for a slide."""
+    if footer is None:
+        footer = {"right": "auto"}
+
+    zones = []
+    for zone in ("left", "center", "right"):
+        value = footer.get(zone, "")
+        inner = ""
+        if value == "auto":
+            inner = f'<span class="colloquium-counter">{index + 1} / {total}</span>'
+        elif value and _IMAGE_URL_RE.search(value):
+            inner = f'<img class="colloquium-footer-logo" src="{value}" alt="">'
+        elif value:
+            inner = value
+        zones.append(f'<div class="colloquium-footer-{zone}">{inner}</div>')
+
+    return f'<div class="colloquium-footer">{"".join(zones)}</div>'
+
+
+def _build_slide_html(slide: Slide, index: int, total: int, md: MarkdownIt, footer: dict | None) -> str:
     """Build the HTML for a single slide."""
     # CSS classes
     classes = ["slide", f"slide--{slide.layout}"]
@@ -76,6 +99,8 @@ def _build_slide_html(slide: Slide, index: int, md: MarkdownIt) -> str:
                 f'<div class="col">{p.strip()}</div>' for p in col_parts if p.strip()
             )
         parts.append(f'<div class="slide-content">{rendered}</div>')
+
+    parts.append(_build_footer_html(footer, index, total))
 
     inner = "\n".join(parts)
 
@@ -108,10 +133,6 @@ $custom_css
 <body>
 <div class="colloquium-deck">
 $slides_html
-</div>
-
-<div class="colloquium-nav">
-    <span class="colloquium-counter">1 / $total_slides</span>
 </div>
 
 <div class="colloquium-progress">
@@ -153,9 +174,10 @@ def build_deck(deck: Deck) -> str:
     theme_css = _read_theme_css(deck.theme)
     presentation_js = _read_presentation_js(deck.theme)
 
+    total = len(deck.slides)
     slides_html_parts = []
     for i, slide in enumerate(deck.slides):
-        slides_html_parts.append(_build_slide_html(slide, i, md))
+        slides_html_parts.append(_build_slide_html(slide, i, total, md, deck.footer))
 
     slides_html = "\n\n".join(slides_html_parts)
 
@@ -164,7 +186,6 @@ def build_deck(deck: Deck) -> str:
         theme_css=theme_css,
         custom_css=deck.custom_css,
         slides_html=slides_html,
-        total_slides=len(deck.slides),
         presentation_js=presentation_js,
     )
 

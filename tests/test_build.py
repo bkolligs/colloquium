@@ -148,6 +148,56 @@ class TestBuildDeck:
 
         assert "title-hidden" in html
 
+    def test_footer_inside_section(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="C")
+        html = build_deck(deck)
+
+        # Footer must be inside the <section>, not outside
+        section = html.split("<section")[1].split("</section>")[0]
+        assert 'class="colloquium-footer"' in section
+
+    def test_default_footer_has_counter(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="C")
+        html = build_deck(deck)
+
+        assert 'class="colloquium-counter"' in html
+        assert "1 / 1" in html
+
+    def test_correct_static_slide_numbers(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="A")
+        deck.add_slide(title="S2", content="B")
+        html = build_deck(deck)
+
+        assert "1 / 2" in html
+        assert "2 / 2" in html
+
+    def test_no_old_nav_div(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="C")
+        html = build_deck(deck)
+
+        assert "colloquium-nav" not in html
+
+    def test_image_logo_detected(self):
+        deck = Deck(title="Test", footer={"left": "https://example.com/logo.png", "right": "auto"})
+        deck.add_slide(title="S1", content="C")
+        html = build_deck(deck)
+
+        assert 'class="colloquium-footer-logo"' in html
+        assert "https://example.com/logo.png" in html
+
+    def test_footer_text_zones(self):
+        deck = Deck(title="Test", footer={"left": "ACME Corp", "center": "My Talk", "right": "auto"})
+        deck.add_slide(title="S1", content="C")
+        html = build_deck(deck)
+
+        assert "ACME Corp" in html
+        assert "My Talk" in html
+        assert "1 / 1" in html
+
 
 class TestBuildFile:
     def test_build_from_markdown(self):
