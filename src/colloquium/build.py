@@ -168,11 +168,36 @@ document.addEventListener("DOMContentLoaded", function() {
 """)
 
 
+def _build_font_css(fonts: dict | None) -> str:
+    """Build CSS for custom font overrides, including Google Fonts @import."""
+    if not fonts:
+        return ""
+    parts = []
+    imports = []
+    overrides = []
+    for key, prop in (("heading", "--colloquium-font-heading"), ("body", "--colloquium-font-body")):
+        name = fonts.get(key)
+        if not name:
+            continue
+        # Google Fonts URL: spaces become +
+        imports.append(name.replace(" ", "+"))
+        overrides.append(f'    {prop}: "{name}", sans-serif;')
+    if imports:
+        families = "&family=".join(f"{f}:wght@400;600;700" for f in imports)
+        parts.append(f'@import url("https://fonts.googleapis.com/css2?family={families}&display=swap");')
+    if overrides:
+        parts.append(":root {\n" + "\n".join(overrides) + "\n}")
+    return "\n".join(parts)
+
+
 def build_deck(deck: Deck) -> str:
     """Build a Deck into a self-contained HTML string."""
     md = _create_md_renderer()
     theme_css = _read_theme_css(deck.theme)
     presentation_js = _read_presentation_js(deck.theme)
+
+    font_css = _build_font_css(deck.fonts)
+    custom_css = font_css + ("\n" + deck.custom_css if deck.custom_css else "")
 
     total = len(deck.slides)
     slides_html_parts = []
@@ -184,7 +209,7 @@ def build_deck(deck: Deck) -> str:
     return _HTML_TEMPLATE.substitute(
         title=deck.title,
         theme_css=theme_css,
-        custom_css=deck.custom_css,
+        custom_css=custom_css,
         slides_html=slides_html,
         presentation_js=presentation_js,
     )

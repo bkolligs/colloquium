@@ -20,6 +20,7 @@ class Deck:
         aspect_ratio: str = "16:9",
         custom_css: str = "",
         footer: dict | None = None,
+        fonts: dict | None = None,
     ):
         self.title = title
         self.author = author
@@ -28,6 +29,7 @@ class Deck:
         self.aspect_ratio = aspect_ratio
         self.custom_css = custom_css
         self.footer = footer
+        self.fonts = fonts
         self.slides: list[Slide] = []
 
     def add_slide(
@@ -134,6 +136,11 @@ class Deck:
             for key in ("left", "center", "right"):
                 if key in self.footer:
                     lines.append(f"  {key}: \"{self.footer[key]}\"")
+        if self.fonts:
+            lines.append("fonts:")
+            for key in ("heading", "body"):
+                if key in self.fonts:
+                    lines.append(f"  {key}: \"{self.fonts[key]}\"")
         lines.append("---")
 
         for slide in self.slides:
