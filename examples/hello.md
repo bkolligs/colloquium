@@ -78,7 +78,7 @@ deck.build("output/")
 - Point two
 - Point three
 
----
+|||
 
 - Result A: **95.2%**
 - Result B: **87.4%**
@@ -95,7 +95,7 @@ This wider column has the main explanation text. The 60/40 split gives more room
 - Key finding one
 - Key finding two
 
----
+|||
 
 > "Supplementary details go in the narrower column."
 
@@ -120,7 +120,7 @@ Supporting points:
 
 ![Colloquium wordmark](mark.webp)
 
----
+|||
 
 Colloquium supports images in any layout. Here the wordmark sits in the wider column alongside explanatory text.
 

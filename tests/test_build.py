@@ -24,7 +24,7 @@ class TestBuildDeck:
         html = build_deck(deck)
 
         assert "katex" in html
-        assert "renderMathInElement" in html
+        assert "katex.render" in html
 
     def test_contains_highlightjs(self):
         deck = Deck(title="Code")
@@ -83,17 +83,17 @@ class TestBuildDeck:
         assert "slide--title" in html
         assert "<h1>" in html
 
-    def test_columns_splits_at_hr(self):
+    def test_columns_splits_at_divider(self):
         deck = Deck(title="Test")
         deck.add_slide(
             title="Cols",
-            content="Left content\n\n---\n\nRight content",
+            content="Left content\n\n|||\n\nRight content",
             classes=["cols-2"],
         )
         html = build_deck(deck)
 
         assert 'class="col"' in html
-        assert "<hr" not in html.split("slide-content")[1].split("</section>")[0]
+        assert "|||" not in html.split("slide-content")[1].split("</section>")[0]
         assert "Left content" in html
         assert "Right content" in html
 
@@ -101,7 +101,7 @@ class TestBuildDeck:
         deck = Deck(title="Test")
         deck.add_slide(
             title="Three",
-            content="A\n\n---\n\nB\n\n---\n\nC",
+            content="A\n\n|||\n\nB\n\n|||\n\nC",
             classes=["cols-3"],
         )
         html = build_deck(deck)
@@ -112,7 +112,7 @@ class TestBuildDeck:
         deck = Deck(title="Test")
         deck.add_slide(
             title="Ratio",
-            content="Wide\n\n---\n\nNarrow",
+            content="Wide\n\n|||\n\nNarrow",
             classes=["cols-60-40"],
         )
         html = build_deck(deck)

@@ -135,7 +135,7 @@ Per-slide configuration via HTML comments. Place them anywhere in the slide.
 
 ### Columns
 
-Split content with `---` (horizontal rule) between columns:
+Split content with `|||` between columns:
 
 ```markdown
 <!-- columns: 2 -->
@@ -143,7 +143,7 @@ Split content with `---` (horizontal rule) between columns:
 
 Left column content
 
----
+|||
 
 Right column content
 ```

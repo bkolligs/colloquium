@@ -195,8 +195,8 @@ def _build_slide_html(slide: Slide, index: int, total: int, md: MarkdownIt, foot
     if slide.content:
         rendered = _render_markdown(slide.content, md)
         if has_columns:
-            # Split content at <hr> tags into column divs
-            col_parts = re.split(r"<hr\s*/?>", rendered)
+            # Split content at ||| column dividers
+            col_parts = re.split(r"<p>\|\|\|</p>", rendered)
             rendered = "".join(
                 f'<div class="col">{p.strip()}</div>' for p in col_parts if p.strip()
             )
