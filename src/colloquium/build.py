@@ -271,6 +271,28 @@ window.addEventListener("load", function() {
             new Chart(canvas, config);
         });
     }
+
+    // Convert chart canvases to static images for print/PDF
+    window.addEventListener("beforeprint", function() {
+        document.querySelectorAll("[data-chart-config]").forEach(function(canvas) {
+            try {
+                var img = document.createElement("img");
+                img.src = canvas.toDataURL("image/png");
+                img.className = "colloquium-chart-print";
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "contain";
+                canvas.style.display = "none";
+                canvas.parentNode.insertBefore(img, canvas.nextSibling);
+            } catch(e) {}
+        });
+    });
+    window.addEventListener("afterprint", function() {
+        document.querySelectorAll(".colloquium-chart-print").forEach(function(img) {
+            img.previousElementSibling.style.display = "";
+            img.remove();
+        });
+    });
 });
 </script>
 </body>

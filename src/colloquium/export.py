@@ -74,6 +74,7 @@ def export_pdf(input_path: str, output_path: str | None = None) -> str | None:
         "--no-margins",
         f"--paper-width=10",
         f"--paper-height=5.625",
+        "--virtual-time-budget=5000",
         html_url,
     ]
 
