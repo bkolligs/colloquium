@@ -33,5 +33,8 @@ colloquium = "colloquium.cli:main"
 Homepage = "https://github.com/interconnects-ai/colloquium"
 Repository = "https://github.com/interconnects-ai/colloquium"
 
+[tool.hatch.build.targets.wheel]
+packages = ["colloquium"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

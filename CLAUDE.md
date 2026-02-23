@@ -53,7 +53,7 @@ Per-slide configuration via HTML comments:
 
 ## File Layout
 ```
-src/colloquium/
+colloquium/
 ├── __init__.py       # Version, top-level imports
 ├── cli.py            # argparse CLI entry points
 ├── parse.py          # Markdown → Slide data structures

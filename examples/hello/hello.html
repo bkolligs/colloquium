@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Colloquium</title>
+
+<!-- KaTeX for LaTeX math -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+
+<!-- Chart.js for inline charts -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<!-- highlight.js for code syntax highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css">
+<script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+
+<style>
+/* Colloquium Default Theme */
+
+/* ===== Custom Properties ===== */
+:root {
+    --colloquium-bg: #ffffff;
+    --colloquium-text: #1a1a2e;
+    --colloquium-heading: #16213e;
+    --colloquium-accent: #0f3460;
+    --colloquium-link: #e94560;
+    --colloquium-code-bg: #f4f4f8;
+    --colloquium-code-text: #1a1a2e;
+    --colloquium-muted: #6b7280;
+    --colloquium-border: #e5e7eb;
+    --colloquium-progress-bg: #e5e7eb;
+    --colloquium-progress-fill: #0f3460;
+
+    --colloquium-font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --colloquium-font-heading: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --colloquium-font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+
+    /* 16:9 reference dimensions — slides are authored at this size and scaled */
+    --colloquium-slide-width: 1280;
+    --colloquium-slide-height: 720;
+    --colloquium-slide-padding: 60px;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--colloquium-font-body);
+    color: var(--colloquium-text);
+    background: #000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Slide Container — 16:9 scaling ===== */
+/* The deck is a fixed 1280x720 canvas that gets CSS-transformed to fit the viewport */
+.colloquium-deck {
+    width: 1280px;
+    height: 720px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    background: var(--colloquium-bg);
+}
+
+.slide {
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 1280px;
+    height: 720px;
+    padding: var(--colloquium-slide-padding);
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    font-size: 24px;
+    line-height: 1.5;
+    background: var(--colloquium-bg);
+}
+
+.slide.active {
+    display: flex;
+}
+
+/* ===== Typography ===== */
+.slide h1 {
+    font-family: var(--colloquium-font-heading);
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--colloquium-heading);
+    margin-bottom: 0.4em;
+    line-height: 1.2;
+}
+
+.slide h2 {
+    font-family: var(--colloquium-font-heading);
+    font-size: 1.6em;
+    font-weight: 600;
+    color: var(--colloquium-heading);
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+
+.slide h3 {
+    font-family: var(--colloquium-font-heading);
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--colloquium-heading);
+    margin-bottom: 0.4em;
+}
+
+.slide p {
+    margin-bottom: 0.8em;
+}
+
+.slide p:last-child {
+    margin-bottom: 0;
+}
+
+.slide strong {
+    font-weight: 600;
+}
+
+.slide em {
+    font-style: italic;
+}
+
+/* ===== Lists ===== */
+.slide ul, .slide ol {
+    margin-bottom: 0.8em;
+    padding-left: 1.4em;
+}
+
+.slide li {
+    margin-bottom: 0.3em;
+}
+
+.slide li::marker {
+    color: var(--colloquium-accent);
+}
+
+/* ===== Links ===== */
+.slide a {
+    color: var(--colloquium-link);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.slide a:hover {
+    border-bottom-color: var(--colloquium-link);
+}
+
+/* ===== Code ===== */
+.slide code {
+    font-family: var(--colloquium-font-mono);
+    font-size: 0.85em;
+    background: var(--colloquium-code-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+}
+
+.slide pre {
+    background: var(--colloquium-code-bg);
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    margin-bottom: 0.8em;
+    overflow-x: auto;
+    font-size: 0.75em;
+    line-height: 1.5;
+}
+
+.slide pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* ===== Images ===== */
+.slide img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.slide .slide-content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.slide .slide-content img {
+    max-height: 450px;
+}
+
+/* ===== Charts ===== */
+.colloquium-chart-container {
+    width: 100%;
+    height: 400px;
+    margin: 0.5em 0;
+}
+
+.colloquium-chart-print {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ===== Tables ===== */
+.slide table {
+    border-collapse: collapse;
+    margin-bottom: 0.8em;
+    font-size: 0.85em;
+    width: 100%;
+}
+
+.slide th, .slide td {
+    border: 1px solid var(--colloquium-border);
+    padding: 0.4em 0.7em;
+    text-align: left;
+}
+
+.slide th {
+    background: var(--colloquium-code-bg);
+    font-weight: 600;
+}
+
+/* ===== Blockquotes ===== */
+.slide blockquote {
+    border-left: 4px solid var(--colloquium-accent);
+    padding-left: 1em;
+    margin-bottom: 0.8em;
+    color: var(--colloquium-muted);
+    font-style: italic;
+}
+
+/* ===== Horizontal Rule ===== */
+.slide hr {
+    border: none;
+    border-top: 2px solid var(--colloquium-border);
+    margin: 1em 0;
+}
+
+/* ===== Math (KaTeX) ===== */
+.slide .katex-display {
+    margin: 0.8em 0;
+    overflow-x: auto;
+}
+
+/* ===== Layout: Title Slide ===== */
+.slide--title {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.slide--title.active {
+    display: flex;
+}
+
+.slide--title h1 {
+    font-size: 2.8em;
+    margin-bottom: 0.3em;
+}
+
+.slide--title .slide-content p {
+    font-size: 1.1em;
+    color: var(--colloquium-muted);
+}
+
+/* ===== Layout: Section Break ===== */
+.slide--section-break {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: var(--colloquium-accent);
+    color: #ffffff;
+}
+
+.slide--section-break.active {
+    display: flex;
+}
+
+.slide--section-break h2 {
+    color: #ffffff;
+    font-size: 2.2em;
+}
+
+.slide--section-break .slide-content {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== Layout: Two Column ===== */
+.slide--two-column .slide-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2em;
+    align-items: start;
+    width: 100%;
+}
+
+/* ===== Layout: Image Left ===== */
+.slide--image-left .slide-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2em;
+    align-items: center;
+    width: 100%;
+}
+
+.slide--image-left .slide-content img {
+    max-height: 500px;
+}
+
+/* ===== Layout: Image Right ===== */
+.slide--image-right .slide-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2em;
+    align-items: center;
+    width: 100%;
+}
+
+.slide--image-right .slide-content img {
+    max-height: 500px;
+    order: 2;
+}
+
+/* ===== Layout: Code ===== */
+.slide--code pre {
+    font-size: 0.7em;
+    max-height: 500px;
+}
+
+/* ===== Utility: Title Position ===== */
+.title-top.active { justify-content: flex-start; }
+.title-center.active { justify-content: center; align-items: center; text-align: center; }
+.title-hidden h1, .title-hidden h2 { display: none; }
+
+/* ===== Utility: Text Alignment ===== */
+.align-left.active { text-align: left; }
+.align-center.active { text-align: center; }
+.align-right.active { text-align: right; }
+
+/* ===== Utility: Vertical Alignment ===== */
+.valign-top.active { justify-content: flex-start; }
+.valign-center.active { justify-content: center; }
+.valign-bottom.active { justify-content: flex-end; }
+
+/* ===== Utility: Columns ===== */
+.cols-2 .slide-content { display: grid; grid-template-columns: 1fr 1fr; gap: 2em; align-items: start; width: 100%; }
+.cols-3 .slide-content { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2em; align-items: start; width: 100%; }
+.cols-60-40 .slide-content { display: grid; grid-template-columns: 3fr 2fr; gap: 2em; align-items: start; width: 100%; }
+.cols-40-60 .slide-content { display: grid; grid-template-columns: 2fr 3fr; gap: 2em; align-items: start; width: 100%; }
+.cols-30-70 .slide-content { display: grid; grid-template-columns: 3fr 7fr; gap: 2em; align-items: start; width: 100%; }
+.cols-70-30 .slide-content { display: grid; grid-template-columns: 7fr 3fr; gap: 2em; align-items: start; width: 100%; }
+
+/* Images in grid layouts fill their column */
+[class*="cols-"] .slide-content img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ===== Utility: Padding ===== */
+.pad-compact.active { padding: 30px; }
+.pad-normal.active  { padding: 60px; }
+.pad-wide.active    { padding: 90px; }
+
+/* ===== Utility: Font Size ===== */
+.size-small.active  { font-size: 20px; }
+.size-normal.active { font-size: 24px; }
+.size-large.active  { font-size: 28px; }
+
+/* ===== Footer (inside each slide) ===== */
+.colloquium-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 13px;
+    color: var(--colloquium-muted);
+    user-select: none;
+}
+
+.colloquium-footer-left,
+.colloquium-footer-center,
+.colloquium-footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.colloquium-footer-left   { justify-content: flex-start; }
+.colloquium-footer-center { justify-content: center; flex: 1; }
+.colloquium-footer-right  { justify-content: flex-end; }
+
+.slide .colloquium-footer-logo {
+    height: 24px;
+    width: auto;
+    border-radius: 0;
+    max-height: none;
+}
+
+.colloquium-counter {
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.colloquium-counter:hover {
+    opacity: 1;
+}
+
+/* Inverted footer on section breaks */
+.slide--section-break .colloquium-footer {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== Slide Picker Overlay ===== */
+.colloquium-picker-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
+}
+
+.colloquium-picker-overlay.active {
+    display: block;
+}
+
+.colloquium-picker {
+    position: absolute;
+    bottom: 48px;
+    right: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-height: 70vh;
+    overflow-y: auto;
+    width: 360px;
+    padding: 8px 0;
+}
+
+.colloquium-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    font-family: var(--colloquium-font-body);
+    font-size: 15px;
+    color: var(--colloquium-text);
+    cursor: pointer;
+    text-align: left;
+}
+
+.colloquium-picker-item:hover {
+    background: var(--colloquium-code-bg);
+}
+
+.colloquium-picker-item.current {
+    color: var(--colloquium-accent);
+    font-weight: 600;
+}
+
+.colloquium-picker-num {
+    min-width: 28px;
+    color: var(--colloquium-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    text-align: right;
+}
+
+.colloquium-picker-item.current .colloquium-picker-num {
+    color: var(--colloquium-accent);
+}
+
+/* ===== Present Button ===== */
+.colloquium-present {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 150;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--colloquium-accent);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+body:hover .colloquium-present {
+    opacity: 0.7;
+}
+
+.colloquium-present:hover {
+    opacity: 1 !important;
+}
+
+/* Hide when already fullscreen */
+:fullscreen .colloquium-present {
+    display: none;
+}
+
+/* ===== Progress Bar ===== */
+.colloquium-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--colloquium-progress-bg);
+    z-index: 100;
+}
+
+.colloquium-progress-bar {
+    height: 100%;
+    background: var(--colloquium-progress-fill);
+    transition: width 0.3s ease;
+}
+
+/* ===== Print / PDF Styles ===== */
+@page {
+    size: 10in 5.625in;  /* 16:9 landscape */
+    margin: 0;
+}
+
+@media print {
+    html, body {
+        width: 10in;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+
+    .colloquium-deck {
+        position: static;
+        transform: none !important;
+        width: 10in;
+        height: auto;
+        background: none;
+    }
+
+    .slide {
+        display: flex !important;
+        position: relative;
+        width: 10in;
+        height: 5.625in;
+        page-break-after: always;
+        page-break-inside: avoid;
+        break-after: page;
+        break-inside: avoid;
+        margin: 0;
+        font-size: 18px;
+        overflow: hidden;
+    }
+
+    .slide:last-child {
+        page-break-after: auto;
+    }
+
+    .colloquium-progress,
+    .colloquium-picker-overlay,
+    .colloquium-present {
+        display: none !important;
+    }
+
+    .colloquium-counter {
+        cursor: default;
+    }
+
+    a {
+        color: inherit !important;
+        text-decoration: underline;
+    }
+
+    /* Swap chart canvases for static images */
+    .colloquium-chart-container canvas {
+        display: none !important;
+    }
+
+    .colloquium-chart-print {
+        display: block !important;
+    }
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap");
+:root {
+    --colloquium-font-heading: "Rubik", sans-serif;
+    --colloquium-font-body: "Poppins", sans-serif;
+}
+:root {
+  --colloquium-bg: #E3EEEA;
+  --colloquium-text: #0B1A14;
+  --colloquium-heading: #0B1A14;
+  --colloquium-accent: #4AA691;
+  --colloquium-link: #4AA691;
+  --colloquium-progress-fill: #4AA691;
+  --colloquium-code-bg: #d4e4dd;
+  --colloquium-muted: #3a5a4a;
+  --colloquium-border: #b8d4c8;
+  --colloquium-progress-bg: #b8d4c8;
+}
+.slide--section-break { background: #4AA691; }
+</style>
+</head>
+<body>
+<div class="colloquium-deck">
+<section class="slide slide--title active" data-index="0">
+<h1>Hello Colloquium</h1>
+<div class="slide-content"><p>A demo presentation with math, code, and figures</p>
+<p>Nathan Lambert</p>
+<p>2026-02-22</p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">1 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="1">
+<h2>What is Colloquium?</h2>
+<div class="slide-content"><ul>
+<li>Agent-native slide creation tool for research talks</li>
+<li>Markdown-based and git-friendly</li>
+<li>AI agents can drive it programmatically</li>
+<li>Single self-contained HTML output</li>
+</ul>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">2 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="2">
+<h2>LaTeX Math Support</h2>
+<div class="slide-content"><p>The loss function for RLHF with a KL penalty:</p>
+<div class="math block">
+\mathcal{L}(\theta) = -\mathbb{E}_{x \sim D}\left[\log \sigma\left(r_\theta(x_w) - r_\theta(x_l)\right)\right]
+</div>
+<p>Inline math works too: <span class="math inline">\nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}[R \cdot \nabla_\theta \log \pi_\theta(a|s)]</span></p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">3 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="3">
+<h2>Code Highlighting</h2>
+<div class="slide-content"><pre><code class="language-python">from colloquium import Deck
+
+deck = Deck(title=&quot;My Talk&quot;, author=&quot;Researcher&quot;)
+deck.add_title_slide(subtitle=&quot;A research presentation&quot;)
+deck.add_slide(
+    title=&quot;Key Results&quot;,
+    content=&quot;Our method achieves **state-of-the-art** performance.&quot;,
+)
+deck.build(&quot;output/&quot;)
+</code></pre>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">4 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content cols-2" data-index="4">
+<h2>Two Equal Columns</h2>
+<div class="slide-content"><div class="col"><ul>
+<li>Point one</li>
+<li>Point two</li>
+<li>Point three</li>
+</ul></div><div class="col"><ul>
+<li>Result A: <strong>95.2%</strong></li>
+<li>Result B: <strong>87.4%</strong></li>
+<li>Result C: <strong>91.8%</strong></li>
+</ul></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">5 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content cols-60-40" data-index="5">
+<h2>Asymmetric Columns (60/40)</h2>
+<div class="slide-content"><div class="col"><p>This wider column has the main explanation text. The 60/40 split gives more room to the primary content while keeping a sidebar for supplementary info.</p>
+<ul>
+<li>Key finding one</li>
+<li>Key finding two</li>
+</ul></div><div class="col"><blockquote>
+<p>&quot;Supplementary details go in the narrower column.&quot;</p>
+</blockquote>
+<p>Supporting points:</p>
+<ol>
+<li>Evidence A</li>
+<li>Evidence B</li>
+</ol></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">6 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content align-center valign-center" data-index="6">
+<h2>Centered Image</h2>
+<div class="slide-content"><p><img src="mark.webp" alt="Colloquium wordmark" /></p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">7 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content cols-40-60" data-index="7">
+<h2>Image with Text</h2>
+<div class="slide-content"><div class="col"><p><img src="mark.webp" alt="Colloquium wordmark" /></p></div><div class="col"><p>Colloquium supports images in any layout. Here the wordmark sits in the wider column alongside explanatory text.</p>
+<p>Images auto-scale to fit their container while maintaining aspect ratio.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">8 / 16</span></div></div>
+</section>
+
+<section class="slide slide--section-break" data-index="8">
+<h2>Key Results</h2>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">9 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="9">
+<h2>Experimental Results</h2>
+<div class="slide-content"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Accuracy</th>
+<th>F1 Score</th>
+<th>Training Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline</td>
+<td>82.1%</td>
+<td>79.3%</td>
+<td>2h</td>
+</tr>
+<tr>
+<td>Ours (small)</td>
+<td>91.4%</td>
+<td>89.7%</td>
+<td>4h</td>
+</tr>
+<tr>
+<td>Ours (large)</td>
+<td><strong>95.2%</strong></td>
+<td><strong>93.8%</strong></td>
+<td>12h</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>&quot;The results demonstrate significant improvements across all metrics.&quot;</p>
+</blockquote>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">10 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content align-center size-large" data-index="10">
+<h2>Centered & Large Text</h2>
+<div class="slide-content"><p>This slide uses the <code>align</code> and <code>size</code> directives to center all text and increase the font size.</p>
+<p>Great for emphasis slides.</p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">11 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content title-center" data-index="11">
+<h2>Vertically Centered Title</h2>
+<div class="slide-content"><p>All content on this slide is vertically centered, like a title slide but with <code>##</code> heading style.</p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">12 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="12">
+<h2>Training Performance</h2>
+<div class="slide-content"><div class="colloquium-chart-container"><canvas id="colloquium-chart-1" data-chart-config='{"type": "line", "data": {"labels": ["10K", "50K", "100K", "250K", "500K", "1M"], "datasets": [{"label": "Accuracy", "data": [62.1, 74.5, 82.3, 89.1, 93.4, 95.2], "borderColor": "#4AA691", "backgroundColor": "transparent", "borderWidth": 2.5, "pointRadius": 3, "tension": 0.3}, {"label": "F1 Score", "data": [58.3, 71.2, 79.8, 87.4, 91.9, 93.8], "borderColor": "#0B1A14", "backgroundColor": "transparent", "borderWidth": 2.5, "pointRadius": 3, "tension": 0.3}]}, "options": {"responsive": true, "maintainAspectRatio": false, "animation": false, "devicePixelRatio": 3, "plugins": {"legend": {"display": true}, "title": {"display": false, "text": "", "font": {"size": 16}}}, "scales": {"x": {"grid": {"display": false}}, "y": {"grid": {"display": false}}}}}'></canvas></div>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">13 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="13">
+<h2>Resource Usage</h2>
+<div class="slide-content"><div class="colloquium-chart-container"><canvas id="colloquium-chart-2" data-chart-config='{"type": "bar", "data": {"labels": ["Small", "Medium", "Large", "XL"], "datasets": [{"label": "Training", "data": [4, 12, 48, 120], "borderColor": "#4AA691", "backgroundColor": "#4AA691cc"}, {"label": "Evaluation", "data": [1, 3, 8, 20], "borderColor": "#0B1A14", "backgroundColor": "#0B1A14cc"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "animation": false, "devicePixelRatio": 3, "plugins": {"legend": {"display": true}, "title": {"display": false, "text": "", "font": {"size": 16}}}, "scales": {"x": {"grid": {"display": false}}, "y": {"grid": {"display": false}}}}}'></canvas></div>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">14 / 16</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="14">
+<h2>Conclusions</h2>
+<div class="slide-content"><ol>
+<li>Colloquium makes slide creation <strong>fast</strong> and <strong>reproducible</strong></li>
+<li>Full LaTeX math support for academic presentations</li>
+<li>Git-friendly markdown source files</li>
+<li>AI agents can create and modify presentations programmatically</li>
+</ol>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">15 / 16</span></div></div>
+</section>
+
+<section class="slide slide--title" data-index="15">
+<h1>Thank You</h1>
+<div class="slide-content"><p>Questions?</p>
+<p>github.com/interconnects-ai/colloquium</p>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">16 / 16</span></div></div>
+</section>
+</div>
+
+<button class="colloquium-present" title="Present (F)">&#9654;</button>
+
+<div class="colloquium-progress">
+    <div class="colloquium-progress-bar" style="width: 0%"></div>
+</div>
+
+<script>
+/**
+ * Colloquium Presentation Engine
+ * 16:9 scaled canvas, keyboard/click/touch navigation, hash routing, fullscreen
+ * Slide picker + per-slide footer
+ */
+class ColloquiumPresentation {
+    constructor() {
+        this.deck = document.querySelector('.colloquium-deck');
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.currentIndex = 0;
+        this.totalSlides = this.slides.length;
+
+        // Reference dimensions (16:9)
+        this.width = 1280;
+        this.height = 720;
+
+        if (this.totalSlides === 0) return;
+
+        this.progressBar = document.querySelector('.colloquium-progress-bar');
+        this.pickerOpen = false;
+
+        this._scaleDeck();
+        window.addEventListener('resize', () => this._scaleDeck());
+
+        this._createPicker();
+        this._bindFooter();
+        this._bindPresent();
+        this._bindKeyboard();
+        this._bindClick();
+        this._bindTouch();
+        this._bindHashChange();
+
+        // Navigate to hash or first slide
+        const hash = parseInt(location.hash.replace('#', ''), 10);
+        if (hash >= 1 && hash <= this.totalSlides) {
+            this.goTo(hash - 1);
+        } else {
+            this.goTo(0);
+        }
+    }
+
+    /**
+     * Scale the 1280x720 deck to fit the viewport while maintaining 16:9 aspect ratio.
+     * Centers the deck with black letterbox/pillarbox bars.
+     */
+    _scaleDeck() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const scale = Math.min(vw / this.width, vh / this.height);
+
+        const scaledW = this.width * scale;
+        const scaledH = this.height * scale;
+        const offsetX = (vw - scaledW) / 2;
+        const offsetY = (vh - scaledH) / 2;
+
+        this.deck.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+    }
+
+    goTo(index) {
+        if (index < 0 || index >= this.totalSlides) return;
+
+        this.slides[this.currentIndex].classList.remove('active');
+        this.currentIndex = index;
+        this.slides[this.currentIndex].classList.add('active');
+
+        // Update hash
+        history.replaceState(null, '', '#' + (this.currentIndex + 1));
+
+        // Update progress bar
+        if (this.progressBar) {
+            const progress = this.totalSlides > 1
+                ? (this.currentIndex / (this.totalSlides - 1)) * 100
+                : 100;
+            this.progressBar.style.width = progress + '%';
+        }
+    }
+
+    next() {
+        this.goTo(this.currentIndex + 1);
+    }
+
+    prev() {
+        this.goTo(this.currentIndex - 1);
+    }
+
+    first() {
+        this.goTo(0);
+    }
+
+    last() {
+        this.goTo(this.totalSlides - 1);
+    }
+
+    // --- Slide Picker ---
+
+    _getSlideTitle(slide, i) {
+        const h1 = slide.querySelector('h1');
+        if (h1) return h1.textContent;
+        const h2 = slide.querySelector('h2');
+        if (h2) return h2.textContent;
+        const img = slide.querySelector('img[alt]');
+        if (img && img.alt) return img.alt;
+        const text = slide.textContent.trim();
+        if (text) return text.substring(0, 50) + (text.length > 50 ? '…' : '');
+        return 'Slide ' + (i + 1);
+    }
+
+    _createPicker() {
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'colloquium-picker-overlay';
+
+        const picker = document.createElement('div');
+        picker.className = 'colloquium-picker';
+
+        this.pickerItems = [];
+
+        this.slides.forEach((slide, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'colloquium-picker-item';
+            btn.innerHTML =
+                '<span class="colloquium-picker-num">' + (i + 1) + '</span>' +
+                '<span>' + this._getSlideTitle(slide, i) + '</span>';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.goTo(i);
+                this._closePicker();
+            });
+            this.pickerItems.push(btn);
+            picker.appendChild(btn);
+        });
+
+        this.overlay.appendChild(picker);
+        document.body.appendChild(this.overlay);
+
+        // Close on click outside the picker card
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this._closePicker();
+            }
+        });
+    }
+
+    _openPicker() {
+        // Highlight current slide
+        this.pickerItems.forEach((btn, i) => {
+            btn.classList.toggle('current', i === this.currentIndex);
+        });
+        this.overlay.classList.add('active');
+        this.pickerOpen = true;
+
+        // Scroll current item into view
+        const current = this.pickerItems[this.currentIndex];
+        if (current) {
+            current.scrollIntoView({ block: 'center' });
+        }
+    }
+
+    _closePicker() {
+        this.overlay.classList.remove('active');
+        this.pickerOpen = false;
+    }
+
+    _bindFooter() {
+        // Attach click handler to all counter spans (one per slide)
+        document.querySelectorAll('.colloquium-counter').forEach((counter) => {
+            counter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.pickerOpen) {
+                    this._closePicker();
+                } else {
+                    this._openPicker();
+                }
+            });
+        });
+    }
+
+    _bindPresent() {
+        const btn = document.querySelector('.colloquium-present');
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._toggleFullscreen();
+            });
+        }
+    }
+
+    // --- Navigation Bindings ---
+
+    _bindKeyboard() {
+        document.addEventListener('keydown', (e) => {
+            // Ignore if user is typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch (e.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                case ' ':
+                case 'PageDown':
+                    e.preventDefault();
+                    this.next();
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                case 'PageUp':
+                    e.preventDefault();
+                    this.prev();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    this.first();
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    this.last();
+                    break;
+                case 'f':
+                case 'F':
+                    e.preventDefault();
+                    this._toggleFullscreen();
+                    break;
+                case 'Escape':
+                    if (this.pickerOpen) {
+                        this._closePicker();
+                    } else if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    }
+                    break;
+            }
+        });
+    }
+
+    _bindClick() {
+        document.addEventListener('click', (e) => {
+            // Ignore clicks on links, interactive elements, footer, and picker
+            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay, .colloquium-present')) return;
+
+            const x = e.clientX / window.innerWidth;
+            if (x < 0.33) {
+                this.prev();
+            } else {
+                this.next();
+            }
+        });
+    }
+
+    _bindTouch() {
+        let startX = 0;
+        let startY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+
+            // Only trigger on horizontal swipes (more horizontal than vertical, min 50px)
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                if (dx < 0) {
+                    this.next();
+                } else {
+                    this.prev();
+                }
+            }
+        }, { passive: true });
+    }
+
+    _bindHashChange() {
+        window.addEventListener('hashchange', () => {
+            const hash = parseInt(location.hash.replace('#', ''), 10);
+            if (hash >= 1 && hash <= this.totalSlides && hash - 1 !== this.currentIndex) {
+                this.goTo(hash - 1);
+            }
+        });
+    }
+
+    _toggleFullscreen() {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.colloquium = new ColloquiumPresentation();
+});
+
+</script>
+
+<script>
+// Render KaTeX math elements and highlight code after deferred scripts load
+window.addEventListener("load", function() {
+    if (typeof katex !== "undefined") {
+        document.querySelectorAll(".math").forEach(function(el) {
+            var displayMode = el.tagName === "DIV";
+            katex.render(el.textContent, el, {
+                displayMode: displayMode,
+                throwOnError: false
+            });
+        });
+    }
+    if (typeof hljs !== "undefined") {
+        hljs.highlightAll();
+    }
+    // Initialize Chart.js charts — temporarily show all slides so canvases
+    // have dimensions, render charts, capture static print images, then restore.
+    if (typeof Chart !== "undefined") {
+        var chartCanvases = document.querySelectorAll("[data-chart-config]");
+        if (chartCanvases.length > 0) {
+            // Make all slides visible so Chart.js can measure canvas size
+            var slides = document.querySelectorAll(".slide");
+            var origDisplay = [];
+            slides.forEach(function(s) {
+                origDisplay.push(s.style.display);
+                s.style.display = "flex";
+            });
+
+            chartCanvases.forEach(function(canvas) {
+                var config = JSON.parse(canvas.getAttribute("data-chart-config"));
+                new Chart(canvas, config);
+            });
+
+            // After a frame, capture each chart as a static image for print
+            requestAnimationFrame(function() {
+                chartCanvases.forEach(function(canvas) {
+                    try {
+                        var img = document.createElement("img");
+                        img.src = canvas.toDataURL("image/png");
+                        img.className = "colloquium-chart-print";
+                        canvas.parentNode.insertBefore(img, canvas.nextSibling);
+                    } catch(e) {}
+                });
+                // Restore original slide visibility
+                slides.forEach(function(s, i) {
+                    s.style.display = origDisplay[i];
+                });
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>
