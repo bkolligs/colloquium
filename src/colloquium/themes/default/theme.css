@@ -193,6 +193,13 @@ html, body {
     margin: 0.5em 0;
 }
 
+.colloquium-chart-print {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 /* ===== Tables ===== */
 .slide table {
     border-collapse: collapse;
@@ -579,5 +586,14 @@ body:hover .colloquium-present {
     a {
         color: inherit !important;
         text-decoration: underline;
+    }
+
+    /* Swap chart canvases for static images */
+    .colloquium-chart-container canvas {
+        display: none !important;
+    }
+
+    .colloquium-chart-print {
+        display: block !important;
     }
 }

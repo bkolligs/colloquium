@@ -264,35 +264,41 @@ window.addEventListener("load", function() {
     if (typeof hljs !== "undefined") {
         hljs.highlightAll();
     }
-    // Initialize Chart.js charts
+    // Initialize Chart.js charts — temporarily show all slides so canvases
+    // have dimensions, render charts, capture static print images, then restore.
     if (typeof Chart !== "undefined") {
-        document.querySelectorAll("[data-chart-config]").forEach(function(canvas) {
-            var config = JSON.parse(canvas.getAttribute("data-chart-config"));
-            new Chart(canvas, config);
-        });
-    }
+        var chartCanvases = document.querySelectorAll("[data-chart-config]");
+        if (chartCanvases.length > 0) {
+            // Make all slides visible so Chart.js can measure canvas size
+            var slides = document.querySelectorAll(".slide");
+            var origDisplay = [];
+            slides.forEach(function(s) {
+                origDisplay.push(s.style.display);
+                s.style.display = "flex";
+            });
 
-    // Convert chart canvases to static images for print/PDF
-    window.addEventListener("beforeprint", function() {
-        document.querySelectorAll("[data-chart-config]").forEach(function(canvas) {
-            try {
-                var img = document.createElement("img");
-                img.src = canvas.toDataURL("image/png");
-                img.className = "colloquium-chart-print";
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.objectFit = "contain";
-                canvas.style.display = "none";
-                canvas.parentNode.insertBefore(img, canvas.nextSibling);
-            } catch(e) {}
-        });
-    });
-    window.addEventListener("afterprint", function() {
-        document.querySelectorAll(".colloquium-chart-print").forEach(function(img) {
-            img.previousElementSibling.style.display = "";
-            img.remove();
-        });
-    });
+            chartCanvases.forEach(function(canvas) {
+                var config = JSON.parse(canvas.getAttribute("data-chart-config"));
+                new Chart(canvas, config);
+            });
+
+            // After a frame, capture each chart as a static image for print
+            requestAnimationFrame(function() {
+                chartCanvases.forEach(function(canvas) {
+                    try {
+                        var img = document.createElement("img");
+                        img.src = canvas.toDataURL("image/png");
+                        img.className = "colloquium-chart-print";
+                        canvas.parentNode.insertBefore(img, canvas.nextSibling);
+                    } catch(e) {}
+                });
+                // Restore original slide visibility
+                slides.forEach(function(s, i) {
+                    s.style.display = origDisplay[i];
+                });
+            });
+        }
+    }
 });
 </script>
 </body>
