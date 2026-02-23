@@ -392,6 +392,9 @@ html, body {
 .text-base { font-size: 1em; }
 .text-lg { font-size: 1.2em; }
 .text-xl { font-size: 1.4em; }
+.text-2xl { font-size: 1.7em; }
+.text-3xl { font-size: 2.2em; }
+.text-4xl { font-size: 2.8em; }
 
 /* ===== Footer (inside each slide) ===== */
 .colloquium-footer {
@@ -834,18 +837,14 @@ deck.build(&quot;output/&quot;)
 </section>
 
 <section class="slide slide--content" data-index="14">
-<h2>Mixed Font Sizes</h2>
-<div class="slide-content"><p>Default body text for context and introduction.</p>
-<div class="text-sm">
-<ul>
-<li><strong>Smaller text</strong> for dense lists or supplementary details</li>
-<li>Works well for methodology sections with many bullet points</li>
-<li>Wrap content in <code>&lt;div class=&quot;text-sm&quot;&gt;</code> to scale down</li>
-</ul>
+<h2>Text Sizes</h2>
+<div class="slide-content"><p><span class="text-4xl"><strong>text-4xl</strong></span> <span class="text-3xl"><strong>text-3xl</strong></span> <span class="text-2xl"><strong>text-2xl</strong></span></p>
+<p><span class="text-xl"><strong>text-xl</strong> — Key takeaways</span></p>
+<p><span class="text-lg"><strong>text-lg</strong> — Callouts and introductions</span></p>
+<p><span class="text-base"><strong>text-base</strong> — Default body text</span></p>
+<p><span class="text-sm"><strong>text-sm</strong> — Dense lists, supporting details</span></p>
+<p><span class="text-xs"><strong>text-xs</strong> — Footnotes, references, fine print</span></p>
 </div>
-<div class="text-xs">
-<p>Extra-small text for footnotes, references, or fine print. Available sizes: <code>text-xs</code> (0.65em), <code>text-sm</code> (0.8em), <code>text-base</code> (1em), <code>text-lg</code> (1.2em), <code>text-xl</code> (1.4em).</p>
-</div></div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right"><span class="colloquium-counter">15 / 17</span></div></div>
 </section>
 

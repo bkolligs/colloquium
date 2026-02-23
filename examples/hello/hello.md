@@ -211,23 +211,19 @@ options:
 
 ---
 
-## Mixed Font Sizes
+## Text Sizes
 
-Default body text for context and introduction.
+<span class="text-4xl">**text-4xl**</span> <span class="text-3xl">**text-3xl**</span> <span class="text-2xl">**text-2xl**</span>
 
-<div class="text-sm">
+<span class="text-xl">**text-xl** — Key takeaways</span>
 
-- **Smaller text** for dense lists or supplementary details
-- Works well for methodology sections with many bullet points
-- Wrap content in `<div class="text-sm">` to scale down
+<span class="text-lg">**text-lg** — Callouts and introductions</span>
 
-</div>
+<span class="text-base">**text-base** — Default body text</span>
 
-<div class="text-xs">
+<span class="text-sm">**text-sm** — Dense lists, supporting details</span>
 
-Extra-small text for footnotes, references, or fine print. Available sizes: `text-xs` (0.65em), `text-sm` (0.8em), `text-base` (1em), `text-lg` (1.2em), `text-xl` (1.4em).
-
-</div>
+<span class="text-xs">**text-xs** — Footnotes, references, fine print</span>
 
 ---
 
