@@ -24,6 +24,7 @@ class ColloquiumPresentation {
 
         this._createPicker();
         this._bindFooter();
+        this._bindPresent();
         this._bindKeyboard();
         this._bindClick();
         this._bindTouch();
@@ -173,6 +174,16 @@ class ColloquiumPresentation {
         });
     }
 
+    _bindPresent() {
+        const btn = document.querySelector('.colloquium-present');
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._toggleFullscreen();
+            });
+        }
+    }
+
     // --- Navigation Bindings ---
 
     _bindKeyboard() {
@@ -221,7 +232,7 @@ class ColloquiumPresentation {
     _bindClick() {
         document.addEventListener('click', (e) => {
             // Ignore clicks on links, interactive elements, footer, and picker
-            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay')) return;
+            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay, .colloquium-present')) return;
 
             const x = e.clientX / window.innerWidth;
             if (x < 0.33) {

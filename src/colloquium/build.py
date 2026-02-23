@@ -139,6 +139,8 @@ $custom_css
 $slides_html
 </div>
 
+<button class="colloquium-present" title="Present (F)">&#9654;</button>
+
 <div class="colloquium-progress">
     <div class="colloquium-progress-bar" style="width: 0%"></div>
 </div>
