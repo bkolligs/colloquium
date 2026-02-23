@@ -121,6 +121,38 @@ All content on this slide is vertically centered, like a title slide but with `#
 
 ---
 
+## Training Performance
+
+```chart
+type: line
+title: Model Performance Over Training
+data:
+  labels: [10K, 50K, 100K, 250K, 500K, 1M]
+  datasets:
+    - label: Accuracy
+      data: [62.1, 74.5, 82.3, 89.1, 93.4, 95.2]
+    - label: F1 Score
+      data: [58.3, 71.2, 79.8, 87.4, 91.9, 93.8]
+```
+
+---
+
+## Resource Usage
+
+```chart
+type: bar
+title: GPU Hours by Model Size
+data:
+  labels: [Small, Medium, Large, XL]
+  datasets:
+    - label: Training
+      data: [4, 12, 48, 120]
+    - label: Evaluation
+      data: [1, 3, 8, 20]
+```
+
+---
+
 ## Conclusions
 
 1. Colloquium makes slide creation **fast** and **reproducible**

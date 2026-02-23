@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import html as html_module
+import json
 import re
 from pathlib import Path
 from string import Template
 
+import yaml
 from markdown_it import MarkdownIt
 from mdit_py_plugins.dollarmath import dollarmath_plugin
 
@@ -48,7 +51,90 @@ def _render_markdown(text: str, md: MarkdownIt) -> str:
     """Render markdown text to HTML."""
     if not text:
         return ""
-    return md.render(text)
+    rendered = md.render(text)
+    rendered = _process_charts(rendered)
+    return rendered
+
+
+# Chart block pattern: <pre><code class="language-chart">YAML</code></pre>
+_CHART_BLOCK_RE = re.compile(
+    r'<pre><code class="language-chart">(.*?)</code></pre>',
+    re.DOTALL,
+)
+
+_chart_counter = 0
+
+
+def _build_chart_html(yaml_str: str) -> str:
+    """Convert a YAML chart spec to a <canvas> + JSON config."""
+    global _chart_counter
+    _chart_counter += 1
+    chart_id = f"colloquium-chart-{_chart_counter}"
+
+    raw = html_module.unescape(yaml_str.strip())
+    try:
+        spec = yaml.safe_load(raw)
+    except yaml.YAMLError:
+        return f'<p style="color:red">Invalid chart YAML</p>'
+
+    if not isinstance(spec, dict):
+        return f'<p style="color:red">Chart spec must be a YAML mapping</p>'
+
+    chart_type = spec.get("type", "bar")
+    data = spec.get("data", {})
+    title = spec.get("title", "")
+    options = spec.get("options", {})
+
+    # Build Chart.js config
+    datasets = []
+    colors = [
+        "#0f3460", "#e94560", "#16213e", "#0ea5e9",
+        "#10b981", "#f59e0b", "#8b5cf6", "#ec4899",
+    ]
+    for i, ds in enumerate(data.get("datasets", [])):
+        dataset = {
+            "label": ds.get("label", f"Series {i+1}"),
+            "data": ds.get("data", []),
+            "borderColor": ds.get("color", colors[i % len(colors)]),
+            "backgroundColor": ds.get("color", colors[i % len(colors)]),
+        }
+        if chart_type in ("line", "scatter"):
+            dataset["backgroundColor"] = "transparent"
+            dataset["borderWidth"] = 2.5
+            dataset["pointRadius"] = 3
+            dataset["tension"] = 0.3
+        elif chart_type in ("bar",):
+            dataset["backgroundColor"] = ds.get("color", colors[i % len(colors)]) + "cc"
+        datasets.append(dataset)
+
+    config = {
+        "type": chart_type,
+        "data": {
+            "labels": data.get("labels", []),
+            "datasets": datasets,
+        },
+        "options": {
+            "responsive": True,
+            "maintainAspectRatio": False,
+            "plugins": {
+                "legend": {"display": len(datasets) > 1},
+                "title": {"display": bool(title), "text": title, "font": {"size": 16}},
+            },
+            **options,
+        },
+    }
+
+    config_json = json.dumps(config)
+    return (
+        f'<div class="colloquium-chart-container">'
+        f'<canvas id="{chart_id}" data-chart-config=\'{config_json}\'></canvas>'
+        f'</div>'
+    )
+
+
+def _process_charts(html_str: str) -> str:
+    """Replace chart code blocks with canvas elements."""
+    return _CHART_BLOCK_RE.sub(lambda m: _build_chart_html(m.group(1)), html_str)
 
 
 _IMAGE_URL_RE = re.compile(r"\.(png|jpg|jpeg|gif|svg|webp)$|^https?://", re.IGNORECASE)
@@ -125,6 +211,9 @@ _HTML_TEMPLATE = Template("""\
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
 
+<!-- Chart.js for inline charts -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
 <!-- highlight.js for code syntax highlighting -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css">
 <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
@@ -164,6 +253,13 @@ window.addEventListener("load", function() {
     if (typeof hljs !== "undefined") {
         hljs.highlightAll();
     }
+    // Initialize Chart.js charts
+    if (typeof Chart !== "undefined") {
+        document.querySelectorAll("[data-chart-config]").forEach(function(canvas) {
+            var config = JSON.parse(canvas.getAttribute("data-chart-config"));
+            new Chart(canvas, config);
+        });
+    }
 });
 </script>
 </body>
@@ -195,6 +291,8 @@ def _build_font_css(fonts: dict | None) -> str:
 
 def build_deck(deck: Deck) -> str:
     """Build a Deck into a self-contained HTML string."""
+    global _chart_counter
+    _chart_counter = 0
     md = _create_md_renderer()
     theme_css = _read_theme_css(deck.theme)
     presentation_js = _read_presentation_js(deck.theme)
