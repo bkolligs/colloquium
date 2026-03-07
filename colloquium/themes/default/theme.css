@@ -698,6 +698,14 @@ html, body {
     text-align: left;
 }
 
+.colloquium-picker-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .colloquium-picker-item:hover {
     background: var(--colloquium-code-bg);
 }

@@ -145,7 +145,7 @@ class ColloquiumPresentation {
             btn.className = 'colloquium-picker-item';
             btn.innerHTML =
                 '<span class="colloquium-picker-num">' + (i + 1) + '</span>' +
-                '<span>' + this._getSlideTitle(slide, i) + '</span>';
+                '<span class="colloquium-picker-title">' + this._getSlideTitle(slide, i) + '</span>';
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.goTo(i);

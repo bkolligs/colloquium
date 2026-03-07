@@ -717,6 +717,14 @@ html, body {
     text-align: left;
 }
 
+.colloquium-picker-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .colloquium-picker-item:hover {
     background: var(--colloquium-code-bg);
 }
@@ -1255,7 +1263,7 @@ class ColloquiumPresentation {
             btn.className = 'colloquium-picker-item';
             btn.innerHTML =
                 '<span class="colloquium-picker-num">' + (i + 1) + '</span>' +
-                '<span>' + this._getSlideTitle(slide, i) + '</span>';
+                '<span class="colloquium-picker-title">' + this._getSlideTitle(slide, i) + '</span>';
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.goTo(i);
