@@ -312,6 +312,7 @@ Render LLM-style chat bubbles using YAML in fenced code blocks:
 
 ````markdown
 ```conversation
+size: 0.9
 messages:
   - role: user
     content: "What is RLHF?"
@@ -329,6 +330,12 @@ messages:
 | `system` | Centered, bordered, muted italic text |
 
 Message content supports markdown formatting (bold, italic, inline code).
+
+Optional conversation settings:
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `size` | `normal` | Bubble font scale as `small`, `normal`, `large`, or a numeric value like `0.9` |
 
 ### Citations
 

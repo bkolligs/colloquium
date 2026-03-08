@@ -408,6 +408,27 @@ class TestConversationRendering:
         assert "User" in html
         assert "Assistant" in html
 
+    def test_conversation_size_modifier(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Chat",
+            content='```conversation\nsize: small\nmessages:\n  - role: user\n    content: "Hi"\n  - role: assistant\n    content: "Hello"\n```',
+        )
+        html = build_deck(deck)
+
+        assert "colloquium-conversation colloquium-conversation--small" in html
+
+    def test_conversation_numeric_size_modifier(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Chat",
+            content='```conversation\nsize: 0.88\nmessages:\n  - role: user\n    content: "Hi"\n  - role: assistant\n    content: "Hello"\n```',
+        )
+        html = build_deck(deck)
+
+        assert 'class="colloquium-conversation"' in html
+        assert 'style="font-size: 0.88em"' in html
+
 
 class TestCitationRendering:
     def _make_bib(self, tmpdir):
