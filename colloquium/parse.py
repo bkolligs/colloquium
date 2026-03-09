@@ -12,7 +12,7 @@ from colloquium.slide import Slide
 
 # Directive patterns: <!-- key: value -->
 _DIRECTIVE_RE = re.compile(
-    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|img-align|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
+    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|footnotes|img-align|img-valign|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
     re.DOTALL,
 )
 
@@ -21,14 +21,23 @@ _DIRECTIVE_CLASS_MAP = {
     "title": lambda v: f"title-{v}",
     "align": lambda v: f"align-{v}",
     "valign": lambda v: f"valign-{v}",
-    "columns": lambda v: f'cols-{v.replace("/", "-")}',
-    "rows": lambda v: f'rows-{v.replace("/", "-")}',
     "padding": lambda v: f"pad-{v}",
     "size": lambda v: f"size-{v}",
     "img-align": lambda v: f"img-align-{v}",
+    "img-valign": lambda v: f"img-valign-{v}",
     "img-fill": lambda v: "img-fill",
     "img-overflow": lambda v: "img-overflow",
 }
+
+_GRID_SPEC_RE = re.compile(r"^\d+(?:/\d+)*$")
+
+
+def _normalize_grid_spec(value: str) -> str | None:
+    """Return a normalized class suffix for valid grid specs only."""
+    value = value.strip()
+    if not value or not _GRID_SPEC_RE.fullmatch(value):
+        return None
+    return value.replace("/", "-")
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -91,6 +100,21 @@ def parse_slide(text: str) -> Slide:
             metadata.setdefault("cite_right", []).extend(
                 k.strip() for k in value.split(",") if k.strip()
             )
+        elif key == "footnote":
+            metadata["footnote_left"] = value
+        elif key == "footnote-right":
+            metadata["footnote_right"] = value
+        elif key == "footnotes":
+            if value in {"left", "right"}:
+                metadata["footnotes_position"] = value
+        elif key == "columns":
+            spec = _normalize_grid_spec(value)
+            if spec:
+                classes.append(f"cols-{spec}")
+        elif key == "rows":
+            spec = _normalize_grid_spec(value)
+            if spec:
+                classes.append(f"rows-{spec}")
         elif key in _DIRECTIVE_CLASS_MAP:
             classes.append(_DIRECTIVE_CLASS_MAP[key](value))
         remaining = remaining.replace(match.group(0), "")

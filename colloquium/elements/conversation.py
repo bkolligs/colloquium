@@ -60,12 +60,20 @@ def process(yaml_str: str) -> str:
         if not isinstance(msg, dict):
             continue
         role = msg.get("role", "user")
+        model = msg.get("model", "")
         content = msg.get("content", "")
         # Render content through markdown for bold/italic/code
         rendered = _inline_md.render(content).strip()
+        role_html = (
+            f'<span class="colloquium-message-role-name">{html_module.escape(role.capitalize())}</span>'
+        )
+        if model:
+            role_html += (
+                f' <span class="colloquium-message-model">({html_module.escape(str(model))})</span>'
+            )
         parts.append(
             f'<div class="colloquium-message colloquium-message--{html_module.escape(role)}">'
-            f'<div class="colloquium-message-role">{html_module.escape(role.capitalize())}</div>'
+            f'<div class="colloquium-message-role">{role_html}</div>'
             f'<div class="colloquium-message-content">{rendered}</div>'
             f'</div>'
         )

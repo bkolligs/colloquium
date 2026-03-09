@@ -20,6 +20,18 @@ class TestBuildDeck:
         assert "Hello" in html
         assert "World" in html
 
+    def test_slide_titles_support_inline_markdown(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="What is **RLHF** with *verifiable* [rewards](https://example.com)?",
+            content="Body",
+        )
+        html = build_deck(deck)
+
+        assert "<strong>RLHF</strong>" in html
+        assert "<em>verifiable</em>" in html
+        assert '<a href="https://example.com">' in html
+
     def test_contains_katex(self):
         deck = Deck(title="Math")
         deck.add_slide(title="Equations", content="$E = mc^2$")
@@ -49,6 +61,18 @@ class TestBuildDeck:
         assert "white-space: pre;" in html
         assert "from colloquium import Deck" in html
         assert "deck = Deck" in html
+
+    def test_spacing_and_footnote_utilities_are_in_theme(self):
+        deck = Deck(title="Utils")
+        deck.add_slide(
+            title="Helpers",
+            content='<div class="colloquium-spacer-md"></div><div class="colloquium-footnote">Note</div>',
+        )
+        html = build_deck(deck)
+
+        assert ".colloquium-spacer-md { height: 1.25em; }" in html
+        assert ".colloquium-footnote {" in html
+        assert ".colloquium-footnote-ref {" in html
 
     def test_inlines_css_and_js(self):
         deck = Deck(title="Test")
@@ -300,6 +324,25 @@ class TestBuildDeck:
         assert ".img-align-right .slide-content img { margin-left: auto; }" in html
         assert ".img-align-center .slide-content { display: flex;" not in html
 
+    def test_grid_images_top_align_by_default_with_img_valign_overrides(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Grid",
+            content="![alt](demo.png)\n\n|||\n\nText",
+            classes=["cols-2", "img-valign-bottom"],
+        )
+        html = build_deck(deck)
+
+        assert ".slide .colloquium-grid > .col > p:first-child:last-child:has(> img)," in html
+        assert "align-items: flex-start;" in html
+        assert ".slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img)," in html
+        assert "align-items: flex-end;" in html
+        assert "object-position: top center;" in html
+        assert ".slide.img-valign-center .colloquium-grid > .col > p:first-child:last-child:has(> img) > img," in html
+        assert "object-position: center center;" in html
+        assert ".slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img) > img," in html
+        assert "object-position: bottom center;" in html
+
     def test_chart_print_image_hidden_on_screen(self):
         deck = Deck(title="Test")
         deck.add_slide(title="Chart", content="```chart\ntype: bar\ndata:\n  labels: [A]\n  datasets:\n    - label: Series\n      data: [1]\n```")
@@ -491,6 +534,18 @@ class TestConversationRendering:
 
         assert "User" in html
         assert "Assistant" in html
+
+    def test_role_labels_can_include_model_name(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Chat",
+            content='```conversation\nmessages:\n  - role: assistant\n    model: "Llama 3.1 405B Base"\n    content: "Hello"\n```',
+        )
+        html = build_deck(deck)
+
+        assert "Assistant" in html
+        assert "(Llama 3.1 405B Base)" in html
+        assert "colloquium-message-model" in html
 
     def test_conversation_numeric_size_modifier(self):
         deck = Deck(title="Test")
@@ -893,7 +948,7 @@ class TestCitationRendering:
             deck.slides.append(slide)
             html = build_deck(deck)
 
-            assert "colloquium-slide-cite--left" in html
+            assert "colloquium-slide-meta--left" in html
             assert "Smith" in html
 
     def test_per_slide_cite_right_renders(self):
@@ -908,7 +963,7 @@ class TestCitationRendering:
             deck.slides.append(slide)
             html = build_deck(deck)
 
-            assert "colloquium-slide-cite--right" in html
+            assert "colloquium-slide-meta--right" in html
             assert "Jones" in html
 
     def test_per_slide_cite_default_order_is_alphabetical(self):
@@ -924,3 +979,93 @@ class TestCitationRendering:
             html = build_deck(deck)
 
             assert html.index("Jones") < html.index("Smith")
+
+    def test_per_slide_footnote_left_renders(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="Some content.",
+            metadata={"footnote_left": "Base models are becoming more flexible."},
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert "colloquium-slide-meta--left" in html
+        assert "colloquium-slide-footnote" in html
+        assert "Base models are becoming more flexible." in html
+
+    def test_per_slide_footnote_and_cite_share_stack(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = self._make_bib(tmpdir)
+            deck = Deck(title="Test", bibliography=bib_path)
+            slide = Slide(
+                title="Intro",
+                content="Some content.",
+                metadata={
+                    "cite_right": ["smith2024"],
+                    "footnote_right": "Midtraining also matters.",
+                },
+            )
+            deck.slides.append(slide)
+            html = build_deck(deck)
+
+            assert html.count('class="colloquium-slide-meta colloquium-slide-meta--right"') == 1
+            assert "Midtraining also matters." in html
+            assert "Smith" in html
+
+    def test_inline_footnote_renders_reference_marker_and_note(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="A sentence with a note.^[This is the note.]",
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'class="colloquium-footnote-ref"' in html
+        assert 'id="colloquium-footnote-1-right-1"' in html
+        assert "1:" in html
+        assert "This is the note." in html
+
+    def test_inline_footnotes_can_render_on_the_left(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="Left note.^[Moves left.]",
+            metadata={"footnotes_position": "left"},
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'class="colloquium-slide-meta colloquium-slide-meta--left"' in html
+        assert "Moves left." in html
+
+    def test_inline_footnote_and_slide_citation_share_stack(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = self._make_bib(tmpdir)
+            deck = Deck(title="Test", bibliography=bib_path)
+            slide = Slide(
+                title="Intro",
+                content="Inline note here.^[A note with context.]",
+                metadata={"cite_right": ["smith2024"]},
+            )
+            deck.slides.append(slide)
+            html = build_deck(deck)
+
+            assert html.count('class="colloquium-slide-meta colloquium-slide-meta--right"') == 1
+            assert "A note with context." in html
+            assert "Smith" in html
+
+    def test_multiple_inline_footnotes_increment_numbers(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="First note.^[One.] Second note.^[Two.]",
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'id="colloquium-footnote-1-right-1"' in html
+        assert 'id="colloquium-footnote-1-right-2"' in html
+        assert "1:" in html
+        assert "2:" in html

@@ -276,10 +276,11 @@ At the slide root, use either `columns:` or `rows:`. For nested layouts, use `ro
 | `<!-- style: css-here -->` | Inline CSS on the slide element |
 | `<!-- notes: text -->` | Speaker notes (hidden in presentation) |
 | `<!-- img-align: center -->` | Align images only (`left`, `center`, `right`) — title unaffected |
+| `<!-- img-valign: top -->` | Vertically align standalone images in grid/row cells (`top`, `center`, `bottom`) |
 | `<!-- img-fill: true -->` | Expand image to fill available slide space |
 | `<!-- img-overflow: true -->` | Let images in grid cells bleed outside their box instead of fitting inside |
 
-See [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions using the built-in title layouts, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste guidance on when to use each layout, and [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts.
+See [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions using the built-in title layouts, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste guidance on when to use each layout, [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts, and [`examples/footnotes/footnotes.md`](./examples/footnotes/footnotes.md) for numbered inline footnotes and floating slide notes.
 
 Generated example HTML is not tracked in git. Build any example locally with `uv run colloquium build examples/.../*.md`.
 
@@ -324,6 +325,12 @@ Normal paragraph text.
 </div>
 
 <span class="text-xs">Footnote or citation</span>
+
+<div class="colloquium-spacer-md"></div>
+
+<div class="colloquium-footnote">
+This is useful for speaker-side caveats or details that should stay visually secondary.
+</div>
 ```
 
 | Class | Scale | Use case |
@@ -336,6 +343,58 @@ Normal paragraph text.
 | `text-2xl` | 1.7em | Emphasis |
 | `text-3xl` | 2.2em | Large statements |
 | `text-4xl` | 2.8em | Hero text |
+
+### Spacing and Footnotes
+
+Use small spacer blocks when you want more breathing room between prose and an example:
+
+```markdown
+After pretraining we are left with a glorified autocomplete model.
+
+<div class="colloquium-spacer-md"></div>
+
+```conversation
+messages:
+  ...
+```
+```
+
+Available spacer helpers:
+
+- `colloquium-spacer-sm`
+- `colloquium-spacer-md`
+- `colloquium-spacer-lg`
+
+Use `colloquium-footnote` for secondary caveats or context inside the slide body:
+
+```markdown
+<div class="colloquium-footnote">
+Base models are also becoming more flexible through midtraining and related data mixtures.
+</div>
+```
+
+For slide-level footnotes that sit above the footer, use directives:
+
+```markdown
+<!-- footnote: Base models are also becoming more flexible through midtraining. -->
+<!-- footnote-right: Right-aligned note for this slide. -->
+```
+
+These share the same bottom-left / bottom-right area as floating citations, with citations stacked above the footnote when both are present.
+
+For inline numbered footnotes, use `^[...]` where you want the marker to appear:
+
+```markdown
+This sentence ends with a numbered footnote.^[Base models are also becoming more flexible through midtraining.]
+```
+
+Inline footnotes collect into the same floating footer area and are numbered per slide. They default to the right side; set the side explicitly when needed:
+
+```markdown
+<!-- footnotes: left -->
+```
+
+Use the dedicated example deck in [`examples/footnotes/`](./examples/footnotes/) for copy-paste patterns.
 
 ### Charts
 
@@ -385,6 +444,7 @@ messages:
   - role: user
     content: "What is RLHF?"
   - role: assistant
+    model: "Tulu 3 405B"
     content: "**RLHF** is a technique for aligning language models..."
   - role: system
     content: "You are a helpful AI assistant."
@@ -404,6 +464,7 @@ Optional conversation settings:
 | Key | Default | Description |
 |-----|---------|-------------|
 | `size` | unset | Bubble font scale as a positive numeric value like `0.9` or `1.05` |
+| `messages[].model` | unset | Optional model label shown next to the role, e.g. `ASSISTANT (Llama 3.1 405B Base)` |
 
 ### Citations
 
