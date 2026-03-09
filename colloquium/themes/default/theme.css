@@ -995,6 +995,21 @@ body:hover .colloquium-present {
     text-decoration: underline;
 }
 
+.colloquium-footnote-ref {
+    font-size: 0.65em;
+    line-height: 0;
+    vertical-align: super;
+}
+
+.slide .colloquium-footnote-ref a {
+    color: var(--colloquium-accent);
+    text-decoration: none;
+}
+
+.slide .colloquium-footnote-ref a:hover {
+    text-decoration: underline;
+}
+
 .colloquium-cite-missing {
     color: #dc2626;
     font-weight: 600;
@@ -1004,7 +1019,7 @@ body:hover .colloquium-present {
 .colloquium-slide-meta {
     position: absolute;
     bottom: 40px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--colloquium-muted);
     max-width: 40%;
     display: flex;
@@ -1047,6 +1062,22 @@ body:hover .colloquium-present {
 
 .colloquium-slide-footnote {
     line-height: 1.35;
+}
+
+.colloquium-slide-footnote-item + .colloquium-slide-footnote-item {
+    margin-top: 0.15em;
+}
+
+.colloquium-slide-footnote-label {
+    font-weight: 600;
+}
+
+.colloquium-slide-footnote-text {
+    display: inline;
+}
+
+.colloquium-slide-footnote-text .colloquium-cite {
+    white-space: normal;
 }
 
 .colloquium-slide-footnote > :first-child {

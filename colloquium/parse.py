@@ -12,7 +12,7 @@ from colloquium.slide import Slide
 
 # Directive patterns: <!-- key: value -->
 _DIRECTIVE_RE = re.compile(
-    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|img-align|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
+    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|footnotes|img-align|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
     re.DOTALL,
 )
 
@@ -103,6 +103,9 @@ def parse_slide(text: str) -> Slide:
             metadata["footnote_left"] = value
         elif key == "footnote-right":
             metadata["footnote_right"] = value
+        elif key == "footnotes":
+            if value in {"left", "right"}:
+                metadata["footnotes_position"] = value
         elif key == "columns":
             spec = _normalize_grid_spec(value)
             if spec:

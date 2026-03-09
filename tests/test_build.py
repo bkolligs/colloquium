@@ -60,6 +60,7 @@ class TestBuildDeck:
 
         assert ".colloquium-spacer-md { height: 1.25em; }" in html
         assert ".colloquium-footnote {" in html
+        assert ".colloquium-footnote-ref {" in html
 
     def test_inlines_css_and_js(self):
         deck = Deck(title="Test")
@@ -968,3 +969,60 @@ class TestCitationRendering:
             assert html.count('class="colloquium-slide-meta colloquium-slide-meta--right"') == 1
             assert "Midtraining also matters." in html
             assert "Smith" in html
+
+    def test_inline_footnote_renders_reference_marker_and_note(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="A sentence with a note.^[This is the note.]",
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'class="colloquium-footnote-ref"' in html
+        assert 'id="colloquium-footnote-1-right-1"' in html
+        assert "1:" in html
+        assert "This is the note." in html
+
+    def test_inline_footnotes_can_render_on_the_left(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="Left note.^[Moves left.]",
+            metadata={"footnotes_position": "left"},
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'class="colloquium-slide-meta colloquium-slide-meta--left"' in html
+        assert "Moves left." in html
+
+    def test_inline_footnote_and_slide_citation_share_stack(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = self._make_bib(tmpdir)
+            deck = Deck(title="Test", bibliography=bib_path)
+            slide = Slide(
+                title="Intro",
+                content="Inline note here.^[A note with context.]",
+                metadata={"cite_right": ["smith2024"]},
+            )
+            deck.slides.append(slide)
+            html = build_deck(deck)
+
+            assert html.count('class="colloquium-slide-meta colloquium-slide-meta--right"') == 1
+            assert "A note with context." in html
+            assert "Smith" in html
+
+    def test_multiple_inline_footnotes_increment_numbers(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="First note.^[One.] Second note.^[Two.]",
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'id="colloquium-footnote-1-right-1"' in html
+        assert 'id="colloquium-footnote-1-right-2"' in html
+        assert "1:" in html
+        assert "2:" in html

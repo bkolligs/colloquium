@@ -4,10 +4,51 @@ from __future__ import annotations
 
 import http.server
 import os
+import re
 import socketserver
 import threading
 import time
 from pathlib import Path
+
+
+_COMMENT_TOKEN_RE = re.compile(r"<!--|-->")
+_FENCE_LINE_RE = re.compile(r"^(?:```|~~~)", re.MULTILINE)
+
+
+def _has_balanced_html_comments(text: str) -> bool:
+    """Return True when HTML comments are balanced in source order."""
+    balance = 0
+    for match in _COMMENT_TOKEN_RE.finditer(text):
+        token = match.group(0)
+        if token == "<!--":
+            balance += 1
+        else:
+            balance -= 1
+            if balance < 0:
+                return False
+    return balance == 0
+
+
+def _has_balanced_fenced_code_blocks(text: str) -> bool:
+    """Return True when triple-backtick and triple-tilde fences are balanced."""
+    backticks = 0
+    tildes = 0
+    for match in _FENCE_LINE_RE.finditer(text):
+        token = match.group(0)
+        if token.startswith("```"):
+            backticks += 1
+        else:
+            tildes += 1
+    return backticks % 2 == 0 and tildes % 2 == 0
+
+
+def _source_is_stable_for_rebuild(input_path: str) -> bool:
+    """Return True when the source is in a stable enough state to rebuild."""
+    try:
+        text = Path(input_path).read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return _has_balanced_html_comments(text) and _has_balanced_fenced_code_blocks(text)
 
 
 def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.Event):
@@ -18,6 +59,7 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
     pending_mtime = 0.0
     pending_since = 0.0
     debounce_seconds = 0.35
+    waiting_for_stable_source = False
 
     while not stop_event.is_set():
         try:
@@ -27,18 +69,26 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
                 pending_since = time.monotonic()
 
             if pending_mtime and time.monotonic() - pending_since >= debounce_seconds:
+                if not _source_is_stable_for_rebuild(input_path):
+                    if not waiting_for_stable_source:
+                        print("  Waiting for stable source before rebuild...")
+                        waiting_for_stable_source = True
+                    continue
+
                 if last_mtime > 0:
                     print(f"  Rebuilding {input_path}...")
                 build_file(input_path, output_path)
                 last_mtime = pending_mtime
                 pending_mtime = 0.0
                 pending_since = 0.0
+                waiting_for_stable_source = False
         except OSError:
             pass
         except Exception as e:
             print(f"  Build error: {e}")
             pending_mtime = 0.0
             pending_since = 0.0
+            waiting_for_stable_source = False
 
         stop_event.wait(timeout=0.15)
 

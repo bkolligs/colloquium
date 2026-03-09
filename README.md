@@ -279,7 +279,7 @@ At the slide root, use either `columns:` or `rows:`. For nested layouts, use `ro
 | `<!-- img-fill: true -->` | Expand image to fill available slide space |
 | `<!-- img-overflow: true -->` | Let images in grid cells bleed outside their box instead of fitting inside |
 
-See [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions using the built-in title layouts, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste guidance on when to use each layout, and [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts.
+See [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions using the built-in title layouts, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste guidance on when to use each layout, [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts, and [`examples/footnotes/footnotes.md`](./examples/footnotes/footnotes.md) for numbered inline footnotes and floating slide notes.
 
 Generated example HTML is not tracked in git. Build any example locally with `uv run colloquium build examples/.../*.md`.
 
@@ -364,7 +364,7 @@ Available spacer helpers:
 - `colloquium-spacer-md`
 - `colloquium-spacer-lg`
 
-Use `colloquium-footnote` for secondary caveats or context:
+Use `colloquium-footnote` for secondary caveats or context inside the slide body:
 
 ```markdown
 <div class="colloquium-footnote">
@@ -380,6 +380,20 @@ For slide-level footnotes that sit above the footer, use directives:
 ```
 
 These share the same bottom-left / bottom-right area as floating citations, with citations stacked above the footnote when both are present.
+
+For inline numbered footnotes, use `^[...]` where you want the marker to appear:
+
+```markdown
+This sentence ends with a numbered footnote.^[Base models are also becoming more flexible through midtraining.]
+```
+
+Inline footnotes collect into the same floating footer area and are numbered per slide. They default to the right side; set the side explicitly when needed:
+
+```markdown
+<!-- footnotes: left -->
+```
+
+Use the dedicated example deck in [`examples/footnotes/`](./examples/footnotes/) for copy-paste patterns.
 
 ### Charts
 

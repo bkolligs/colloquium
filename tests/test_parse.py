@@ -143,6 +143,11 @@ class TestParseSlide:
         slide = parse_slide(text)
         assert slide.metadata.get("footnote_right") == "Right aligned note"
 
+    def test_footnotes_side_directive(self):
+        text = "<!-- footnotes: right -->\n## Slide\n\nText^[Note]"
+        slide = parse_slide(text)
+        assert slide.metadata.get("footnotes_position") == "right"
+
     def test_rows_equal(self):
         text = "<!-- rows: 2 -->\n## Slide\n\nTop\n\n===\n\nBottom"
         slide = parse_slide(text)

@@ -56,9 +56,19 @@ def _render_markdown(text: str, md: MarkdownIt) -> str:
     return rendered
 
 
+def _render_inline_markdown(text: str, md: MarkdownIt) -> str:
+    """Render inline markdown text to HTML."""
+    if not text:
+        return ""
+    rendered = md.renderInline(text)
+    rendered = elements.process_all(rendered)
+    return rendered
+
+
 # ===== Citation processing =====
 
 _CITATION_RE = re.compile(r'\[@([\w:.\-]+(?:\s*;\s*@[\w:.\-]+)*)\]')
+_INLINE_FOOTNOTE_RE = re.compile(r"\^\[(.+?)\]", re.DOTALL)
 
 
 def _parse_bib_file(path: str) -> dict:
@@ -465,20 +475,119 @@ def _build_slide_cite_html(
     return f'<div class="colloquium-slide-cite">{"; ".join(labels)}</div>'
 
 
-def _build_slide_footnote_html(text: str, md: MarkdownIt) -> str:
-    """Build per-slide floating footnote content."""
-    if not text or not text.strip():
-        return ""
-    rendered = _render_markdown(text.strip(), md).strip()
+def _extract_inline_footnotes(
+    text: str,
+    slide_index: int,
+    position: str = "right",
+) -> tuple[str, dict[str, list[dict[str, str]]]]:
+    """Replace inline footnotes with markers and return collected footnotes."""
+    notes: dict[str, list[dict[str, str]]] = {"left": [], "right": []}
+    target = "left" if position == "left" else "right"
+
+    def _replace(match: re.Match[str]) -> str:
+        number = len(notes[target]) + 1
+        note_id = f"colloquium-footnote-{slide_index + 1}-{target}-{number}"
+        ref_id = f"colloquium-footnote-ref-{slide_index + 1}-{target}-{number}"
+        notes[target].append(
+            {
+                "number": str(number),
+                "text": match.group(1).strip(),
+                "id": note_id,
+                "ref_id": ref_id,
+            }
+        )
+        return (
+            f'<sup class="colloquium-footnote-ref">'
+            f'<a href="#{html_module.escape(note_id)}" id="{html_module.escape(ref_id)}">{number}</a>'
+            f"</sup>"
+        )
+
+    return _INLINE_FOOTNOTE_RE.sub(_replace, text), notes
+
+
+def _render_footnote_text(
+    text: str,
+    md: MarkdownIt,
+    bib_entries: dict,
+    style: str,
+    cited_keys: list,
+    citation_order: str = "auto",
+    citation_numbers: dict[str, int] | None = None,
+) -> str:
+    """Render inline footnote text with citation support."""
+    rendered = _render_inline_markdown(text.strip(), md).strip()
     if not rendered:
         return ""
-    return f'<div class="colloquium-slide-footnote">{rendered}</div>'
+    return _process_citations(
+        rendered,
+        bib_entries,
+        style,
+        cited_keys,
+        citation_order,
+        citation_numbers,
+    )
+
+
+def _build_slide_footnote_html(
+    text: str,
+    inline_footnotes: list[dict[str, str]],
+    md: MarkdownIt,
+    bib_entries: dict,
+    style: str,
+    cited_keys: list,
+    citation_order: str = "auto",
+    citation_numbers: dict[str, int] | None = None,
+) -> str:
+    """Build per-slide floating footnote content."""
+    parts: list[str] = []
+
+    if inline_footnotes:
+        items = []
+        for note in inline_footnotes:
+            rendered_text = _render_footnote_text(
+                note["text"],
+                md,
+                bib_entries,
+                style,
+                cited_keys,
+                citation_order,
+                citation_numbers,
+            )
+            if not rendered_text:
+                continue
+            items.append(
+                '<div class="colloquium-slide-footnote-item" '
+                f'id="{html_module.escape(note["id"])}">'
+                f'<span class="colloquium-slide-footnote-label">{html_module.escape(note["number"])}:</span> '
+                f'<span class="colloquium-slide-footnote-text">{rendered_text}</span>'
+                "</div>"
+            )
+        if items:
+            parts.append("".join(items))
+
+    if text and text.strip():
+        rendered = _render_markdown(text.strip(), md).strip()
+        if rendered:
+            rendered = _process_citations(
+                rendered,
+                bib_entries,
+                style,
+                cited_keys,
+                citation_order,
+                citation_numbers,
+            )
+            parts.append(rendered)
+
+    if not parts:
+        return ""
+    return f'<div class="colloquium-slide-footnote">{"".join(parts)}</div>'
 
 
 def _build_slide_meta_stack_html(
     position: str,
     cite_keys: list,
     footnote_text: str,
+    inline_footnotes: list[dict[str, str]],
     bib_entries: dict,
     style: str,
     cited_keys: list,
@@ -490,7 +599,16 @@ def _build_slide_meta_stack_html(
     cite_html = _build_slide_cite_html(
         cite_keys, bib_entries, style, cited_keys, citation_order, citation_numbers
     )
-    footnote_html = _build_slide_footnote_html(footnote_text, md)
+    footnote_html = _build_slide_footnote_html(
+        footnote_text,
+        inline_footnotes,
+        md,
+        bib_entries,
+        style,
+        cited_keys,
+        citation_order,
+        citation_numbers,
+    )
     if not cite_html and not footnote_html:
         return ""
     inner = "".join(part for part in (cite_html, footnote_html) if part)
@@ -600,16 +718,25 @@ def _build_slide_html(
 
     has_columns = any(c.startswith("cols-") for c in slide.classes)
     has_rows = any(c.startswith("rows-") for c in slide.classes)
+    inline_footnote_side = slide.metadata.get("footnotes_position", "right")
+    slide_content = slide.content
+    inline_footnotes = {"left": [], "right": []}
+    if slide_content:
+        slide_content, inline_footnotes = _extract_inline_footnotes(
+            slide_content,
+            index,
+            inline_footnote_side,
+        )
 
-    if slide.content:
+    if slide_content:
         if has_rows:
-            rendered = _build_rows_html(slide.content, md)
+            rendered = _build_rows_html(slide_content, md)
             rows_spec = _extract_grid_spec(slide.classes, "rows-")
             rows_style = _grid_template_style(rows_spec or "", "rows")
             content_style_attr = f' style="{rows_style}"' if rows_style else ""
             parts.append(f'<div class="slide-content colloquium-rows"{content_style_attr}>{rendered}</div>')
         else:
-            rendered = _render_markdown(slide.content, md)
+            rendered = _render_markdown(slide_content, md)
             content_classes = ["slide-content"]
             content_style = ""
             if has_columns:
@@ -629,6 +756,7 @@ def _build_slide_html(
         "left",
         cite_left,
         footnote_left,
+        inline_footnotes["left"],
         bib_entries,
         citation_style,
         cited_keys,
@@ -640,6 +768,7 @@ def _build_slide_html(
         "right",
         cite_right,
         footnote_right,
+        inline_footnotes["right"],
         bib_entries,
         citation_style,
         cited_keys,
