@@ -967,6 +967,17 @@ body:hover .colloquium-present {
     color: rgba(255, 255, 255, 0.85);
 }
 
+.colloquium-message-role-name {
+    display: inline;
+}
+
+.colloquium-message-model {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
 .colloquium-message-content p {
     margin: 0 0 0.3em;
 }

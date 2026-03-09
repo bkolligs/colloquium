@@ -504,6 +504,18 @@ class TestConversationRendering:
         assert "User" in html
         assert "Assistant" in html
 
+    def test_role_labels_can_include_model_name(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Chat",
+            content='```conversation\nmessages:\n  - role: assistant\n    model: "Llama 3.1 405B Base"\n    content: "Hello"\n```',
+        )
+        html = build_deck(deck)
+
+        assert "Assistant" in html
+        assert "(Llama 3.1 405B Base)" in html
+        assert "colloquium-message-model" in html
+
     def test_conversation_numeric_size_modifier(self):
         deck = Deck(title="Test")
         deck.add_slide(

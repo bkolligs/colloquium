@@ -443,6 +443,7 @@ messages:
   - role: user
     content: "What is RLHF?"
   - role: assistant
+    model: "Tulu 3 405B"
     content: "**RLHF** is a technique for aligning language models..."
   - role: system
     content: "You are a helpful AI assistant."
@@ -462,6 +463,7 @@ Optional conversation settings:
 | Key | Default | Description |
 |-----|---------|-------------|
 | `size` | unset | Bubble font scale as a positive numeric value like `0.9` or `1.05` |
+| `messages[].model` | unset | Optional model label shown next to the role, e.g. `ASSISTANT (Llama 3.1 405B Base)` |
 
 ### Citations
 

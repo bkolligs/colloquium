@@ -716,6 +716,27 @@ html, body {
 .text-3xl { font-size: 2.2em; }
 .text-4xl { font-size: 2.8em; }
 
+/* ===== Utility: Spacing ===== */
+.colloquium-spacer-sm { height: 0.75em; }
+.colloquium-spacer-md { height: 1.25em; }
+.colloquium-spacer-lg { height: 2em; }
+
+/* ===== Utility: Footnotes ===== */
+.colloquium-footnote {
+    margin-top: 1em;
+    font-size: 0.68em;
+    line-height: 1.35;
+    color: var(--colloquium-muted);
+}
+
+.colloquium-footnote p {
+    margin: 0.35em 0 0;
+}
+
+.colloquium-footnote p:first-child {
+    margin-top: 0;
+}
+
 /* ===== Footer (inside each slide) ===== */
 .colloquium-footer {
     position: absolute;
@@ -965,6 +986,17 @@ body:hover .colloquium-present {
     color: rgba(255, 255, 255, 0.85);
 }
 
+.colloquium-message-role-name {
+    display: inline;
+}
+
+.colloquium-message-model {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
 .colloquium-message-content p {
     margin: 0 0 0.3em;
 }
@@ -982,14 +1014,29 @@ body:hover .colloquium-present {
 }
 
 /* ===== Citations ===== */
-.colloquium-cite {
+.slide a.colloquium-cite {
     color: var(--colloquium-accent);
     text-decoration: none;
     font-size: 0.85em;
     white-space: nowrap;
 }
 
-.colloquium-cite:hover {
+.slide a.colloquium-cite:hover {
+    text-decoration: underline;
+}
+
+.colloquium-footnote-ref {
+    font-size: 0.65em;
+    line-height: 0;
+    vertical-align: super;
+}
+
+.slide .colloquium-footnote-ref a {
+    color: var(--colloquium-accent);
+    text-decoration: none;
+}
+
+.slide .colloquium-footnote-ref a:hover {
     text-decoration: underline;
 }
 
@@ -998,33 +1045,84 @@ body:hover .colloquium-present {
     font-weight: 600;
 }
 
-/* ===== Per-Slide Citation Footnotes ===== */
-.colloquium-slide-cite {
+/* ===== Per-Slide Footnote Area ===== */
+.colloquium-slide-meta {
     position: absolute;
     bottom: 40px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--colloquium-muted);
-    max-width: 60%;
+    max-width: 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+    z-index: 4;
+}
+
+.colloquium-slide-meta--left {
+    left: 24px;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.colloquium-slide-meta--right {
+    right: 24px;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.colloquium-slide-cite,
+.colloquium-slide-footnote {
+    max-width: 100%;
+}
+
+.colloquium-slide-cite {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.colloquium-slide-cite--left {
-    left: 24px;
-}
-
-.colloquium-slide-cite--right {
-    right: 24px;
-}
-
-.colloquium-slide-cite .colloquium-cite {
+.colloquium-slide-cite a.colloquium-cite {
     font-size: inherit;
     color: var(--colloquium-accent);
 }
 
-.colloquium-slide-cite .colloquium-cite:hover {
+.colloquium-slide-cite a.colloquium-cite:hover {
     color: var(--colloquium-heading);
+}
+
+.colloquium-slide-footnote {
+    line-height: 1.35;
+}
+
+.colloquium-slide-footnote-item + .colloquium-slide-footnote-item {
+    margin-top: 0.15em;
+}
+
+.colloquium-slide-footnote-label {
+    font-weight: 600;
+}
+
+.colloquium-slide-footnote-text {
+    display: inline;
+}
+
+.colloquium-slide-footnote-text .colloquium-cite {
+    white-space: normal;
+}
+
+.colloquium-slide-footnote > :first-child {
+    margin-top: 0;
+}
+
+.colloquium-slide-footnote > :last-child {
+    margin-bottom: 0;
+}
+
+.colloquium-slide-meta--right .colloquium-slide-footnote ul,
+.colloquium-slide-meta--right .colloquium-slide-footnote ol {
+    padding-right: 1.2em;
+    padding-left: 0;
+    list-style-position: inside;
 }
 
 /* ===== References Slide ===== */
@@ -1170,9 +1268,9 @@ body:hover .colloquium-present {
         text-decoration: underline;
     }
 
-    .colloquium-cite,
-    .colloquium-slide-cite .colloquium-cite,
-    .colloquium-ref-url {
+    .slide a.colloquium-cite,
+    .colloquium-slide-cite a.colloquium-cite,
+    .slide a.colloquium-ref-url {
         color: var(--colloquium-accent) !important;
     }
 
@@ -1389,8 +1487,8 @@ deck.build(&quot;output/&quot;)
 <section class="slide slide--content" data-index="15">
 <h2>LLM Conversation</h2>
 <div class="slide-content"><div class="colloquium-conversation" id="colloquium-conversation-1">
-<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role">User</div><div class="colloquium-message-content"><p>What is RLHF?</p></div></div>
-<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role">Assistant</div><div class="colloquium-message-content"><p><strong>RLHF</strong> (Reinforcement Learning from Human Feedback) is a technique for aligning language models with human preferences using reward models trained on human comparisons.</p></div></div>
+<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role"><span class="colloquium-message-role-name">User</span></div><div class="colloquium-message-content"><p>What is RLHF?</p></div></div>
+<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role"><span class="colloquium-message-role-name">Assistant</span></div><div class="colloquium-message-content"><p><strong>RLHF</strong> (Reinforcement Learning from Human Feedback) is a technique for aligning language models with human preferences using reward models trained on human comparisons.</p></div></div>
 </div>
 </div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">16 / 25</span></div></div>
@@ -1403,9 +1501,9 @@ deck.build(&quot;output/&quot;)
 <li>The reward model scores LLM outputs</li>
 <li>PPO optimizes the policy against the reward</li>
 </ul></div><div class="col"><div class="colloquium-conversation" id="colloquium-conversation-2">
-<div class="colloquium-message colloquium-message--system"><div class="colloquium-message-role">System</div><div class="colloquium-message-content"><p>You are a helpful AI research assistant.</p></div></div>
-<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role">User</div><div class="colloquium-message-content"><p>What is RLHF?</p></div></div>
-<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role">Assistant</div><div class="colloquium-message-content"><p><strong>RLHF</strong> is a technique for aligning language models with human preferences.</p></div></div>
+<div class="colloquium-message colloquium-message--system"><div class="colloquium-message-role"><span class="colloquium-message-role-name">System</span></div><div class="colloquium-message-content"><p>You are a helpful AI research assistant.</p></div></div>
+<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role"><span class="colloquium-message-role-name">User</span></div><div class="colloquium-message-content"><p>What is RLHF?</p></div></div>
+<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role"><span class="colloquium-message-role-name">Assistant</span></div><div class="colloquium-message-content"><p><strong>RLHF</strong> is a technique for aligning language models with human preferences.</p></div></div>
 </div></div></div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">17 / 25</span></div></div>
 </section>
@@ -1413,15 +1511,15 @@ deck.build(&quot;output/&quot;)
 <section class="slide slide--content size-small" data-index="17">
 <h2>Multi-Turn Conversation</h2>
 <div class="slide-content"><div class="colloquium-conversation" id="colloquium-conversation-3">
-<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role">User</div><div class="colloquium-message-content"><p>Can you explain the RLHF training pipeline?</p></div></div>
-<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role">Assistant</div><div class="colloquium-message-content"><p>The RLHF pipeline has three main steps:</p>
+<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role"><span class="colloquium-message-role-name">User</span></div><div class="colloquium-message-content"><p>Can you explain the RLHF training pipeline?</p></div></div>
+<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role"><span class="colloquium-message-role-name">Assistant</span></div><div class="colloquium-message-content"><p>The RLHF pipeline has three main steps:</p>
 <ol>
 <li><strong>SFT</strong> — supervised fine-tuning on demonstrations</li>
 <li><strong>Reward modeling</strong> — train a reward model on human preferences</li>
 <li><strong>PPO</strong> — optimize the policy against the reward model</li>
 </ol></div></div>
-<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role">User</div><div class="colloquium-message-content"><p>What's the role of KL divergence?</p></div></div>
-<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role">Assistant</div><div class="colloquium-message-content"><p>The KL penalty prevents the policy from diverging too far from the SFT model. Without it, the model can exploit the reward model with degenerate outputs — this is called <em>reward hacking</em>.</p></div></div>
+<div class="colloquium-message colloquium-message--user"><div class="colloquium-message-role"><span class="colloquium-message-role-name">User</span></div><div class="colloquium-message-content"><p>What's the role of KL divergence?</p></div></div>
+<div class="colloquium-message colloquium-message--assistant"><div class="colloquium-message-role"><span class="colloquium-message-role-name">Assistant</span></div><div class="colloquium-message-content"><p>The KL penalty prevents the policy from diverging too far from the SFT model. Without it, the model can exploit the reward model with degenerate outputs — this is called <em>reward hacking</em>.</p></div></div>
 </div>
 </div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">18 / 25</span></div></div>
@@ -1433,7 +1531,7 @@ deck.build(&quot;output/&quot;)
 <p>InstructGPT <a href="#colloquium-ref-ouyang2022" class="colloquium-cite">(Ouyang et al., 2022)</a> scaled this approach to large language models, demonstrating significant alignment improvements.</p>
 <p>For a comprehensive overview, see <a href="#colloquium-ref-lambert2024" class="colloquium-cite">(Lambert, 2024)</a>.</p>
 </div>
-<div class="colloquium-slide-cite colloquium-slide-cite--left"><a href="#colloquium-ref-christiano2017" class="colloquium-cite">Christiano et al., 2017</a>; <a href="#colloquium-ref-ouyang2022" class="colloquium-cite">Ouyang et al., 2022</a></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-cite"><a href="#colloquium-ref-christiano2017" class="colloquium-cite">Christiano et al., 2017</a>; <a href="#colloquium-ref-ouyang2022" class="colloquium-cite">Ouyang et al., 2022</a></div></div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">19 / 25</span></div></div>
 </section>
 
@@ -1444,7 +1542,7 @@ deck.build(&quot;output/&quot;)
 </div>
 <p>The reward model is trained with the Bradley-Terry preference model, where <span class="math inline">y_w</span> is the preferred response and <span class="math inline">y_l</span> is the rejected response.</p>
 </div>
-<div class="colloquium-slide-cite colloquium-slide-cite--right"><a href="#colloquium-ref-christiano2017" class="colloquium-cite">Christiano et al., 2017</a></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--right"><div class="colloquium-slide-cite"><a href="#colloquium-ref-christiano2017" class="colloquium-cite">Christiano et al., 2017</a></div></div>
 <div class="colloquium-footer"><div class="colloquium-footer-left"><img class="colloquium-footer-logo" src="logo.png" alt="" style="height: 24px"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">20 / 25</span></div></div>
 </section>
 
