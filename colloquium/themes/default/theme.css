@@ -879,6 +879,46 @@ html, body {
     color: var(--colloquium-accent);
 }
 
+/* ===== Picker Trigger ===== */
+.colloquium-picker-trigger {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 155;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--colloquium-heading);
+    font-family: var(--colloquium-font-body);
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.colloquium-picker-trigger:hover {
+    background: #fff;
+}
+
+.colloquium-picker-trigger-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colloquium-muted);
+}
+
+.colloquium-picker-trigger-count {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--colloquium-accent);
+}
+
 /* ===== Present Button ===== */
 .colloquium-present {
     position: fixed;
@@ -912,6 +952,38 @@ body:hover .colloquium-present {
 /* Hide when already fullscreen */
 :fullscreen .colloquium-present {
     display: none;
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+    .colloquium-present {
+        display: none !important;
+    }
+
+    .colloquium-picker-trigger {
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        min-height: 52px;
+        padding: 12px 16px;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.22);
+    }
+
+    .colloquium-picker-trigger-label {
+        font-size: 12px;
+    }
+
+    .colloquium-picker-trigger-count {
+        font-size: 16px;
+    }
+
+    .colloquium-picker {
+        right: 12px;
+        left: 12px;
+        bottom: 76px;
+        width: auto;
+        max-height: min(72vh, 560px);
+    }
 }
 
 /* ===== Overflow Warning ===== */
@@ -1267,6 +1339,7 @@ body:hover .colloquium-present {
     .colloquium-progress,
     .colloquium-picker-overlay,
     .colloquium-present,
+    .colloquium-picker-trigger,
     .colloquium-overflow-warn {
         display: none !important;
     }

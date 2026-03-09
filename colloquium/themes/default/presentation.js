@@ -17,6 +17,10 @@ class ColloquiumPresentation {
         if (this.totalSlides === 0) return;
 
         this.progressBar = document.querySelector('.colloquium-progress-bar');
+        this.pickerTrigger = document.querySelector('.colloquium-picker-trigger');
+        this.pickerTriggerCount = this.pickerTrigger
+            ? this.pickerTrigger.querySelector('.colloquium-picker-trigger-count')
+            : null;
         this.pickerOpen = false;
 
         this._scaleDeck();
@@ -24,6 +28,7 @@ class ColloquiumPresentation {
 
         this._createPicker();
         this._bindFooter();
+        this._bindPickerTrigger();
         this._bindPresent();
         this._bindKeyboard();
         this._bindClick();
@@ -99,6 +104,8 @@ class ColloquiumPresentation {
                 : 100;
             this.progressBar.style.width = progress + '%';
         }
+
+        this._updatePickerTrigger();
     }
 
     next() {
@@ -186,17 +193,34 @@ class ColloquiumPresentation {
         this.pickerOpen = false;
     }
 
+    _togglePicker() {
+        if (this.pickerOpen) {
+            this._closePicker();
+        } else {
+            this._openPicker();
+        }
+    }
+
+    _updatePickerTrigger() {
+        if (!this.pickerTriggerCount) return;
+        this.pickerTriggerCount.textContent = (this.currentIndex + 1) + ' / ' + this.totalSlides;
+    }
+
     _bindFooter() {
         // The entire right footer zone is the picker trigger.
         document.querySelectorAll('.colloquium-footer-nav').forEach((target) => {
             target.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (this.pickerOpen) {
-                    this._closePicker();
-                } else {
-                    this._openPicker();
-                }
+                this._togglePicker();
             });
+        });
+    }
+
+    _bindPickerTrigger() {
+        if (!this.pickerTrigger) return;
+        this.pickerTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._togglePicker();
         });
     }
 
@@ -277,7 +301,7 @@ class ColloquiumPresentation {
             }
 
             // Ignore clicks on links, interactive elements, footer, and picker
-            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay, .colloquium-present')) return;
+            if (e.target.closest('a, button, input, textarea, select, .colloquium-footer, .colloquium-picker-overlay, .colloquium-present, .colloquium-picker-trigger')) return;
 
             const x = e.clientX / window.innerWidth;
             if (x < 0.33) {

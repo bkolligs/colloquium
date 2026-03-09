@@ -821,6 +821,11 @@ $slides_html
 
 <button class="colloquium-present" title="Present (F)">&#9654;</button>
 
+<button class="colloquium-picker-trigger" title="Open slide picker">
+    <span class="colloquium-picker-trigger-label">Slides</span>
+    <span class="colloquium-picker-trigger-count">1 / $total_slides</span>
+</button>
+
 <div class="colloquium-progress">
     <div class="colloquium-progress-bar" style="width: 0%"></div>
 </div>
@@ -1031,6 +1036,7 @@ def build_deck(deck: Deck) -> str:
         theme_css=theme_css,
         custom_css=custom_css,
         slides_html=slides_html,
+        total_slides=str(total),
         presentation_js=presentation_js,
     )
 

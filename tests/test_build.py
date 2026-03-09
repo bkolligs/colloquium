@@ -288,6 +288,16 @@ class TestBuildDeck:
         assert 'class="colloquium-counter"' in html
         assert "1 / 1" in html
 
+    def test_build_includes_picker_trigger(self):
+        deck = Deck(title="Test")
+        deck.add_slide(title="S1", content="A")
+        deck.add_slide(title="S2", content="B")
+        html = build_deck(deck)
+
+        assert 'class="colloquium-picker-trigger"' in html
+        assert 'class="colloquium-picker-trigger-label">Slides<' in html
+        assert 'class="colloquium-picker-trigger-count">1 / 2<' in html
+
     def test_correct_static_slide_numbers(self):
         deck = Deck(title="Test")
         deck.add_slide(title="S1", content="A")
