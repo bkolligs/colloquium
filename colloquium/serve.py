@@ -15,21 +15,32 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
     from colloquium.build import build_file
 
     last_mtime = 0.0
+    pending_mtime = 0.0
+    pending_since = 0.0
+    debounce_seconds = 0.35
 
     while not stop_event.is_set():
         try:
             mtime = os.stat(input_path).st_mtime
-            if mtime > last_mtime:
+            if mtime > max(last_mtime, pending_mtime):
+                pending_mtime = mtime
+                pending_since = time.monotonic()
+
+            if pending_mtime and time.monotonic() - pending_since >= debounce_seconds:
                 if last_mtime > 0:
                     print(f"  Rebuilding {input_path}...")
                 build_file(input_path, output_path)
-                last_mtime = mtime
+                last_mtime = pending_mtime
+                pending_mtime = 0.0
+                pending_since = 0.0
         except OSError:
             pass
         except Exception as e:
             print(f"  Build error: {e}")
+            pending_mtime = 0.0
+            pending_since = 0.0
 
-        stop_event.wait(timeout=0.5)
+        stop_event.wait(timeout=0.15)
 
 
 def serve(input_path: str, port: int = 8080, output_dir: str | None = None):

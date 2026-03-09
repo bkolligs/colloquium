@@ -324,6 +324,12 @@ Normal paragraph text.
 </div>
 
 <span class="text-xs">Footnote or citation</span>
+
+<div class="colloquium-spacer-md"></div>
+
+<div class="colloquium-footnote">
+This is useful for speaker-side caveats or details that should stay visually secondary.
+</div>
 ```
 
 | Class | Scale | Use case |
@@ -336,6 +342,35 @@ Normal paragraph text.
 | `text-2xl` | 1.7em | Emphasis |
 | `text-3xl` | 2.2em | Large statements |
 | `text-4xl` | 2.8em | Hero text |
+
+### Spacing and Footnotes
+
+Use small spacer blocks when you want more breathing room between prose and an example:
+
+```markdown
+After pretraining we are left with a glorified autocomplete model.
+
+<div class="colloquium-spacer-md"></div>
+
+```conversation
+messages:
+  ...
+```
+```
+
+Available spacer helpers:
+
+- `colloquium-spacer-sm`
+- `colloquium-spacer-md`
+- `colloquium-spacer-lg`
+
+Use `colloquium-footnote` for secondary caveats or context:
+
+```markdown
+<div class="colloquium-footnote">
+Base models are also becoming more flexible through midtraining and related data mixtures.
+</div>
+```
 
 ### Charts
 

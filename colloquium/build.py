@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html as html_module
 import re
+import tempfile
 from pathlib import Path
 from string import Template
 
@@ -501,6 +502,22 @@ def _grid_template_style(spec: str, axis: str) -> str:
     return ""
 
 
+def _write_text_atomic(output_path: str, text: str) -> None:
+    """Write text atomically so generated HTML is never partially updated."""
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w",
+        encoding="utf-8",
+        dir=str(output.parent),
+        delete=False,
+        suffix=output.suffix,
+    ) as tmp:
+        tmp.write(text)
+        tmp_path = Path(tmp.name)
+    tmp_path.replace(output)
+
+
 def _build_rows_html(content: str, md: MarkdownIt) -> str:
     """Build a row-based slide body with optional nested columns in each row."""
     row_blocks = [block.strip() for block in _ROW_SPLIT_RE.split(content) if block.strip()]
@@ -855,6 +872,5 @@ def build_file(input_path: str, output_path: str | None = None) -> str:
     if output_path is None:
         output_path = str(Path(input_path).with_suffix(".html"))
 
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(output_path).write_text(html, encoding="utf-8")
+    _write_text_atomic(output_path, html)
     return output_path

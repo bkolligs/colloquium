@@ -128,6 +128,11 @@ class TestParseSlide:
         slide = parse_slide(text)
         assert "cols-30-70" in slide.classes
 
+    def test_columns_incomplete_ratio_is_ignored(self):
+        text = "<!-- columns: 50/ -->\n## Slide\n\nContent"
+        slide = parse_slide(text)
+        assert not any(cls.startswith("cols-") for cls in slide.classes)
+
     def test_rows_equal(self):
         text = "<!-- rows: 2 -->\n## Slide\n\nTop\n\n===\n\nBottom"
         slide = parse_slide(text)
@@ -137,6 +142,11 @@ class TestParseSlide:
         text = "<!-- rows: 35/65 -->\n## Slide\n\nTop\n\n===\n\nBottom"
         slide = parse_slide(text)
         assert "rows-35-65" in slide.classes
+
+    def test_rows_incomplete_ratio_is_ignored(self):
+        text = "<!-- rows: 35/ -->\n## Slide\n\nTop\n\n===\n\nBottom"
+        slide = parse_slide(text)
+        assert not any(cls.startswith("rows-") for cls in slide.classes)
 
     def test_padding_directive(self):
         text = "<!-- padding: compact -->\n## Slide\n\nContent"

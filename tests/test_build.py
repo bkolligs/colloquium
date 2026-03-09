@@ -50,6 +50,17 @@ class TestBuildDeck:
         assert "from colloquium import Deck" in html
         assert "deck = Deck" in html
 
+    def test_spacing_and_footnote_utilities_are_in_theme(self):
+        deck = Deck(title="Utils")
+        deck.add_slide(
+            title="Helpers",
+            content='<div class="colloquium-spacer-md"></div><div class="colloquium-footnote">Note</div>',
+        )
+        html = build_deck(deck)
+
+        assert ".colloquium-spacer-md { height: 1.25em; }" in html
+        assert ".colloquium-footnote {" in html
+
     def test_inlines_css_and_js(self):
         deck = Deck(title="Test")
         deck.add_slide(title="S1", content="Content")
