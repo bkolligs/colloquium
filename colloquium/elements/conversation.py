@@ -62,6 +62,9 @@ def process(yaml_str: str) -> str:
         role = msg.get("role", "user")
         model = msg.get("model", "")
         content = msg.get("content", "")
+        if not isinstance(content, str):
+            content = str(content)
+        content = content.replace("\\n", "\n")
         # Render content through markdown for bold/italic/code
         rendered = _inline_md.render(content).strip()
         role_html = (

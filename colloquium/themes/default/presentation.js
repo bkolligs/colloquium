@@ -79,6 +79,12 @@ class ColloquiumPresentation {
         const offsetY = (vh - scaledH) / 2;
 
         this.deck.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+
+        if (window.colloquiumFitCaptionedFiguresIn) {
+            requestAnimationFrame(() => {
+                window.colloquiumFitCaptionedFiguresIn(this.slides[this.currentIndex]);
+            });
+        }
     }
 
     goTo(index) {
@@ -91,6 +97,11 @@ class ColloquiumPresentation {
         if (window.colloquiumFitDisplayMathIn) {
             requestAnimationFrame(() => {
                 window.colloquiumFitDisplayMathIn(this.slides[this.currentIndex]);
+            });
+        }
+        if (window.colloquiumFitCaptionedFiguresIn) {
+            requestAnimationFrame(() => {
+                window.colloquiumFitCaptionedFiguresIn(this.slides[this.currentIndex]);
             });
         }
 

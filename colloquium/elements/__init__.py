@@ -1,5 +1,10 @@
 """Element registry — discovers and runs all block-element processors."""
 
+from colloquium.elements.builtwith import (
+    PATTERN as BUILTWITH_PATTERN,
+    process as process_builtwith,
+    reset as reset_builtwith,
+)
 from colloquium.elements.chart import (
     PATTERN as CHART_PATTERN,
     process as process_chart,
@@ -12,6 +17,7 @@ from colloquium.elements.conversation import (
 )
 
 ELEMENTS = [
+    (BUILTWITH_PATTERN, process_builtwith),
     (CHART_PATTERN, process_chart),
     (CONV_PATTERN, process_conversation),
 ]
@@ -26,5 +32,6 @@ def process_all(html_str: str) -> str:
 
 def reset() -> None:
     """Reset all element counters (call before each build)."""
+    reset_builtwith()
     reset_charts()
     reset_conversations()

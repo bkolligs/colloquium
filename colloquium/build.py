@@ -65,10 +65,33 @@ def _render_inline_markdown(text: str, md: MarkdownIt) -> str:
     return rendered
 
 
+_STANDALONE_IMAGE_PARAGRAPH_RE = re.compile(r"<p>\s*(<img\b[^>]*>)\s*</p>", re.DOTALL)
+_IMAGE_ALT_ATTR_RE = re.compile(r'\balt="([^"]*)"')
+
+
+def _render_figure_captions(rendered: str, md: MarkdownIt) -> str:
+    """Convert standalone image paragraphs into figure/caption markup."""
+
+    def _replace(match: re.Match[str]) -> str:
+        image_html = match.group(1)
+        alt_match = _IMAGE_ALT_ATTR_RE.search(image_html)
+        alt_text = html_module.unescape(alt_match.group(1)).strip() if alt_match else ""
+        caption_html = _render_inline_markdown(alt_text, md).strip() if alt_text else ""
+        if not caption_html:
+            return match.group(0)
+        return (
+            '<figure class="colloquium-figure">'
+            f"{image_html}"
+            f'<figcaption class="colloquium-figure-caption">{caption_html}</figcaption>'
+            "</figure>"
+        )
+
+    return _STANDALONE_IMAGE_PARAGRAPH_RE.sub(_replace, rendered)
+
+
 # ===== Citation processing =====
 
 _CITATION_RE = re.compile(r'\[@([\w:.\-]+(?:\s*;\s*@[\w:.\-]+)*)\]')
-_INLINE_FOOTNOTE_RE = re.compile(r"\^\[(.+?)\]", re.DOTALL)
 
 
 def _parse_bib_file(path: str) -> dict:
@@ -480,18 +503,22 @@ def _extract_inline_footnotes(
     slide_index: int,
     position: str = "right",
 ) -> tuple[str, dict[str, list[dict[str, str]]]]:
-    """Replace inline footnotes with markers and return collected footnotes."""
+    r"""Replace inline footnotes with markers and return collected footnotes.
+
+    Footnotes can contain nested square brackets, which is common in math
+    (e.g. ``\left[ ... \right]``) and citations (e.g. ``[@key]``).
+    """
     notes: dict[str, list[dict[str, str]]] = {"left": [], "right": []}
     target = "left" if position == "left" else "right"
 
-    def _replace(match: re.Match[str]) -> str:
+    def _build_marker(note_text: str) -> str:
         number = len(notes[target]) + 1
         note_id = f"colloquium-footnote-{slide_index + 1}-{target}-{number}"
         ref_id = f"colloquium-footnote-ref-{slide_index + 1}-{target}-{number}"
         notes[target].append(
             {
                 "number": str(number),
-                "text": match.group(1).strip(),
+                "text": note_text.strip(),
                 "id": note_id,
                 "ref_id": ref_id,
             }
@@ -502,7 +529,29 @@ def _extract_inline_footnotes(
             f"</sup>"
         )
 
-    return _INLINE_FOOTNOTE_RE.sub(_replace, text), notes
+    parts: list[str] = []
+    i = 0
+    while i < len(text):
+        if text.startswith("^[", i):
+            j = i + 2
+            depth = 1
+            while j < len(text) and depth > 0:
+                if text[j] == "[":
+                    depth += 1
+                elif text[j] == "]":
+                    depth -= 1
+                j += 1
+
+            if depth == 0:
+                note_text = text[i + 2 : j - 1]
+                parts.append(_build_marker(note_text))
+                i = j
+                continue
+
+        parts.append(text[i])
+        i += 1
+
+    return "".join(parts), notes
 
 
 def _render_footnote_text(
@@ -647,6 +696,15 @@ def _grid_template_style(spec: str, axis: str) -> str:
     return ""
 
 
+def _slide_uses_figure_captions(classes: list[str], deck_figure_captions: bool = False) -> bool:
+    """Return whether standalone images should render as figures on this slide."""
+    if "no-figure-captions" in classes:
+        return False
+    if "figure-caption" in classes or "figure-captions" in classes:
+        return True
+    return deck_figure_captions
+
+
 def _write_text_atomic(output_path: str, text: str) -> None:
     """Write text atomically so generated HTML is never partially updated."""
     output = Path(output_path)
@@ -663,7 +721,7 @@ def _write_text_atomic(output_path: str, text: str) -> None:
     tmp_path.replace(output)
 
 
-def _build_rows_html(content: str, md: MarkdownIt) -> str:
+def _build_rows_html(content: str, md: MarkdownIt, figure_captions: bool = False) -> str:
     """Build a row-based slide body with optional nested columns in each row."""
     row_blocks = [block.strip() for block in _ROW_SPLIT_RE.split(content) if block.strip()]
     rows_html = []
@@ -678,6 +736,8 @@ def _build_rows_html(content: str, md: MarkdownIt) -> str:
             block = block.replace(match.group(0), "")
 
         rendered = _render_markdown(block.strip(), md)
+        if figure_captions:
+            rendered = _render_figure_captions(rendered, md)
         if any(cls.startswith("cols-") for cls in row_classes):
             rendered = _split_columns_from_rendered(rendered)
 
@@ -692,6 +752,7 @@ def _build_slide_html(
     footer: dict | None, bib_entries: dict | None = None,
     citation_style: str = "author-year", cited_keys: list | None = None,
     citation_order: str = "auto", citation_numbers: dict[str, int] | None = None,
+    deck_figure_captions: bool = False,
 ) -> str:
     """Build the HTML for a single slide."""
     if bib_entries is None:
@@ -730,14 +791,17 @@ def _build_slide_html(
         )
 
     if slide_content:
+        figure_captions = _slide_uses_figure_captions(slide.classes, deck_figure_captions)
         if has_rows:
-            rendered = _build_rows_html(slide_content, md)
+            rendered = _build_rows_html(slide_content, md, figure_captions=figure_captions)
             rows_spec = _extract_grid_spec(slide.classes, "rows-")
             rows_style = _grid_template_style(rows_spec or "", "rows")
             content_style_attr = f' style="{rows_style}"' if rows_style else ""
             parts.append(f'<div class="slide-content colloquium-rows"{content_style_attr}>{rendered}</div>')
         else:
             rendered = _render_markdown(slide_content, md)
+            if figure_captions:
+                rendered = _render_figure_captions(rendered, md)
             content_classes = ["slide-content"]
             content_style = ""
             if has_columns:
@@ -851,6 +915,58 @@ window.colloquiumFitDisplayMathIn = function(root) {
     });
 };
 
+window.colloquiumFitCaptionedFiguresIn = function(root) {
+    var scope = root || document;
+    var selector = [
+        ".slide-content > figure.colloquium-figure:first-child:last-child",
+        ".colloquium-grid > .col > figure.colloquium-figure:first-child:last-child",
+        ".colloquium-row > figure.colloquium-figure:first-child:last-child"
+    ].join(", ");
+
+    scope.querySelectorAll(selector).forEach(function(figure) {
+        var img = figure.querySelector("img");
+        var caption = figure.querySelector("figcaption");
+        if (!img || !caption) return;
+
+        var container = figure.parentElement;
+        if (!container) return;
+
+        figure.style.width = "";
+        img.style.width = "";
+        img.style.height = "";
+        img.style.maxWidth = "";
+        img.style.maxHeight = "";
+
+        var naturalWidth = img.naturalWidth || 0;
+        var naturalHeight = img.naturalHeight || 0;
+        if (!naturalWidth || !naturalHeight) {
+            img.addEventListener("load", function() {
+                window.colloquiumFitCaptionedFiguresIn(scope);
+            }, { once: true });
+            return;
+        }
+
+        var availableWidth = container.clientWidth;
+        var availableHeight = container.clientHeight;
+        if (!availableWidth || !availableHeight) return;
+
+        var scale = Math.min(
+            availableWidth / naturalWidth,
+            availableHeight / naturalHeight
+        );
+        if (!isFinite(scale) || scale <= 0) return;
+
+        var renderWidth = Math.max(1, Math.floor(naturalWidth * scale));
+        var renderHeight = Math.max(1, Math.floor(naturalHeight * scale));
+
+        figure.style.width = renderWidth + "px";
+        img.style.width = renderWidth + "px";
+        img.style.height = renderHeight + "px";
+        img.style.maxWidth = "none";
+        img.style.maxHeight = "none";
+    });
+};
+
 // Render KaTeX math elements and highlight code after deferred scripts load
 window.addEventListener("load", function() {
     if (typeof katex !== "undefined") {
@@ -865,12 +981,14 @@ window.addEventListener("load", function() {
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(function() {
                 window.colloquiumFitDisplayMathIn(document);
+                window.colloquiumFitCaptionedFiguresIn(document);
             });
         }
     }
     if (typeof hljs !== "undefined") {
         hljs.highlightAll();
     }
+    window.colloquiumFitCaptionedFiguresIn(document);
     // Initialize Chart.js charts — temporarily show all slides so canvases
     // have dimensions, render charts, capture static print images, then restore.
     if (typeof Chart !== "undefined") {
@@ -1014,6 +1132,7 @@ def build_deck(deck: Deck) -> str:
             cited_keys=cited_keys,
             citation_order=citation_order,
             citation_numbers=citation_numbers,
+            deck_figure_captions=deck.figure_captions,
         )
         if bib_entries:
             slide_html = _process_citations(

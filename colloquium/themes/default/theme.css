@@ -190,6 +190,40 @@ html, body {
     display: block;
 }
 
+.slide figure.colloquium-figure {
+    margin: 0 auto 0.8em;
+    max-width: 100%;
+    width: fit-content;
+}
+
+.slide figure.colloquium-figure > img {
+    display: block;
+}
+
+.slide figure.colloquium-figure > figcaption {
+    margin-top: 0.45em;
+    font-size: 0.6em;
+    line-height: 1.35;
+    color: var(--colloquium-muted);
+}
+
+.slide.figure-caption,
+.slide.figure-captions {
+    counter-reset: colloquium-figure;
+}
+
+.slide.figure-caption figure.colloquium-figure,
+.slide.figure-captions figure.colloquium-figure {
+    counter-increment: colloquium-figure;
+}
+
+.slide.figure-caption figure.colloquium-figure > figcaption::before,
+.slide.figure-captions figure.colloquium-figure > figcaption::before {
+    content: "Figure " counter(colloquium-figure) ": ";
+    color: var(--colloquium-heading);
+    font-weight: 600;
+}
+
 /* ===== Charts ===== */
 .colloquium-chart-container {
     width: 100%;
@@ -605,6 +639,15 @@ html, body {
     overflow: visible;
 }
 
+.slide .slide-content:has(> figure.colloquium-figure:first-child:last-child),
+.slide .colloquium-grid > .col:has(> figure.colloquium-figure:first-child:last-child),
+.slide .colloquium-row:has(> figure.colloquium-figure:first-child:last-child) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
 .colloquium-grid > .col > :last-child,
 .colloquium-rows > .colloquium-row > :last-child {
     margin-bottom: 0;
@@ -614,6 +657,7 @@ html, body {
 .slide .colloquium-grid > .col > p:first-child:last-child:has(> img),
 .slide .colloquium-row > p:first-child:last-child:has(> img) {
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
     justify-content: center;
     width: 100%;
@@ -637,28 +681,78 @@ html, body {
     align-items: flex-end;
 }
 
+.slide.img-valign-center .slide-content:has(> figure.colloquium-figure:first-child:last-child),
+.slide.img-valign-center .colloquium-grid > .col:has(> figure.colloquium-figure:first-child:last-child),
+.slide.img-valign-center .colloquium-row:has(> figure.colloquium-figure:first-child:last-child) {
+    justify-content: center;
+}
+
+.slide.img-valign-bottom .slide-content:has(> figure.colloquium-figure:first-child:last-child),
+.slide.img-valign-bottom .colloquium-grid > .col:has(> figure.colloquium-figure:first-child:last-child),
+.slide.img-valign-bottom .colloquium-row:has(> figure.colloquium-figure:first-child:last-child) {
+    justify-content: flex-end;
+}
+
+.slide .slide-content > figure.colloquium-figure:first-child:last-child,
+.slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child,
+.slide .colloquium-row > figure.colloquium-figure:first-child:last-child {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: auto;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    overflow: visible;
+}
+
 .slide .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,
 .slide .colloquium-row > p:first-child:last-child:has(> img) > img {
     width: 100%;
     height: 100%;
+    flex: 1 1 auto;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
     object-position: top center;
+    min-height: 0;
+}
+
+.slide .slide-content > figure.colloquium-figure:first-child:last-child > img,
+.slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+.slide .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
+    width: auto;
+    height: auto;
+    flex: 0 0 auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: top center;
+    min-height: 0;
 }
 
 .slide.img-valign-top .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,
-.slide.img-valign-top .colloquium-row > p:first-child:last-child:has(> img) > img {
+.slide.img-valign-top .colloquium-row > p:first-child:last-child:has(> img) > img,
+.slide.img-valign-top .slide-content > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-top .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-top .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
     object-position: top center;
 }
 
 .slide.img-valign-center .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,
-.slide.img-valign-center .colloquium-row > p:first-child:last-child:has(> img) > img {
+.slide.img-valign-center .colloquium-row > p:first-child:last-child:has(> img) > img,
+.slide.img-valign-center .slide-content > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-center .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-center .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
     object-position: center center;
 }
 
 .slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,
-.slide.img-valign-bottom .colloquium-row > p:first-child:last-child:has(> img) > img {
+.slide.img-valign-bottom .colloquium-row > p:first-child:last-child:has(> img) > img,
+.slide.img-valign-bottom .slide-content > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-bottom .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-valign-bottom .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
     object-position: bottom center;
 }
 
@@ -669,14 +763,21 @@ html, body {
 }
 
 .slide.img-overflow .colloquium-grid > .col > p:first-child:last-child:has(> img),
-.slide.img-overflow .colloquium-row > p:first-child:last-child:has(> img) {
+.slide.img-overflow .colloquium-row > p:first-child:last-child:has(> img),
+.slide.img-overflow .slide-content > figure.colloquium-figure:first-child:last-child,
+.slide.img-overflow .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child,
+.slide.img-overflow .colloquium-row > figure.colloquium-figure:first-child:last-child {
     overflow: visible;
 }
 
 .slide.img-overflow .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,
-.slide.img-overflow .colloquium-row > p:first-child:last-child:has(> img) > img {
+.slide.img-overflow .colloquium-row > p:first-child:last-child:has(> img) > img,
+.slide.img-overflow .slide-content > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-overflow .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+.slide.img-overflow .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
     width: auto;
     height: auto;
+    flex: 0 0 auto;
     max-width: none;
     max-height: none;
 }
@@ -885,7 +986,7 @@ html, body {
     right: 16px;
     bottom: 16px;
     z-index: 155;
-    display: flex;
+    display: none;
     align-items: center;
     gap: 10px;
     border: none;
@@ -954,12 +1055,13 @@ body:hover .colloquium-present {
     display: none;
 }
 
-@media (max-width: 900px), (pointer: coarse) {
+@media (hover: none) and (pointer: coarse) {
     .colloquium-present {
         display: none !important;
     }
 
     .colloquium-picker-trigger {
+        display: flex;
         right: max(12px, env(safe-area-inset-right));
         bottom: max(12px, env(safe-area-inset-bottom));
         min-height: 52px;
@@ -1083,10 +1185,15 @@ body:hover .colloquium-present {
 
 .colloquium-message-content p {
     margin: 0 0 0.3em;
+    white-space: pre-line;
 }
 
 .colloquium-message-content p:last-child {
     margin-bottom: 0;
+}
+
+.colloquium-message-content li {
+    white-space: pre-line;
 }
 
 .colloquium-message-content code {
@@ -1095,6 +1202,68 @@ body:hover .colloquium-present {
 
 .colloquium-message--user .colloquium-message-content code {
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== Built With Badge ===== */
+.slide a.colloquium-builtwith {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75em;
+    max-width: 100%;
+    padding: 0.55em 0.8em;
+    border: 1px solid color-mix(in srgb, var(--colloquium-border) 75%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--colloquium-code-bg) 75%, white 25%);
+    color: var(--colloquium-text);
+    text-decoration: none;
+    line-height: 1.1;
+}
+
+.slide a.colloquium-builtwith:hover {
+    border-color: color-mix(in srgb, var(--colloquium-accent) 55%, var(--colloquium-border) 45%);
+    color: var(--colloquium-heading);
+}
+
+.colloquium-builtwith-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15em;
+    height: 1.15em;
+    flex: 0 0 auto;
+}
+
+.colloquium-builtwith-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.colloquium-builtwith-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05em;
+}
+
+.colloquium-builtwith-label {
+    font-size: 0.6em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colloquium-muted);
+}
+
+.colloquium-builtwith-repo {
+    font-size: 0.82em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.colloquium-builtwith-stars {
+    font-size: 0.72em;
+    color: var(--colloquium-muted);
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 /* ===== Citations ===== */

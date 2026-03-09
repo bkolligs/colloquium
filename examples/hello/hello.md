@@ -3,6 +3,7 @@ title: "Hello Colloquium"
 author: "Nathan Lambert"
 date: "2026-02-22"
 bibliography: refs.bib
+figure_captions: true
 fonts:
   heading: "Rubik"
   body: "Poppins"
@@ -111,7 +112,7 @@ Supporting points:
 
 ## Centered Image
 
-![Colloquium wordmark](mark.webp)
+![](mark.webp)
 
 ---
 
@@ -311,7 +312,7 @@ The reward model is trained with the Bradley-Terry preference model, where $y_w$
 - **2019**: Fine-tuning LMs from human preferences [@ziegler2019]
 - **2020**: Learning to summarize with human feedback [@stiennon2020]
 - **2022**: InstructGPT [@ouyang2022] and Anthropic's HHH assistant [@bai2022]
-- **2023**: DPO [@rafailov2023], IPO [@azar2023], Llama 2 [@touvron2023], Zephyr [@tunstall2023], Tulu 2 [@ivison2023], RLAIF [@lee2023]
+- **2023**: DPO [@rafailov2023], IPO [@azar2023], Llama 2 [@touvron2023], Zephyr [@tunstall2023], Tülu 2 [@ivison2023], RLAIF [@lee2023]
 - **2024**: KTO [@ethayarajh2024], AlpacaFarm [@dubois2024], and the RLHF Book [@lambert2024]
 
 ---
@@ -327,10 +328,17 @@ The reward model is trained with the Bradley-Terry preference model, where $y_w$
 
 ---
 
-<!-- layout: title -->
-
-# Thank You
+<!-- rows: 80/20 -->
+## Thank You
 
 Questions?
 
-github.com/natolambert/colloquium
+===
+
+<!-- row-columns: 60/40 -->
+
+|||
+
+```builtwith
+repo: natolambert/colloquium
+```

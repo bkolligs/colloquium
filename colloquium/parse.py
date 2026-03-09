@@ -163,6 +163,7 @@ def parse_markdown(text: str) -> Deck:
         bibliography=metadata.get("bibliography", ""),
         citation_style=metadata.get("citation_style", "author-year"),
         citation_order=metadata.get("citation_order", "auto"),
+        figure_captions=bool(metadata.get("figure_captions", False)),
     )
 
     # Split on --- slide separators (horizontal rules)

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from colloquium.build import build_deck, build_file, _process_citations, _parse_bib_file, _build_references_slides_html
 from colloquium.deck import Deck
+from colloquium.elements import builtwith as builtwith_element
 from colloquium.slide import Slide
 from colloquium.elements.conversation import process as process_conversation, PATTERN as CONV_PATTERN
 
@@ -74,6 +75,32 @@ class TestBuildDeck:
         assert ".colloquium-footnote {" in html
         assert ".colloquium-footnote-ref {" in html
 
+    def test_builtwith_element_renders_badge(self, monkeypatch):
+        monkeypatch.setattr(builtwith_element, "_fetch_repo_stars", lambda repo: 321)
+
+        deck = Deck(title="Badge")
+        deck.add_slide(
+            title="Closing",
+            content="```builtwith\nrepo: natolambert/colloquium\n```",
+        )
+        html = build_deck(deck)
+
+        assert "colloquium-builtwith" in html
+        assert "Built with" in html
+        assert "natolambert/colloquium" in html
+        assert "321 stars" in html
+
+    def test_builtwith_element_can_hide_stars(self):
+        deck = Deck(title="Badge")
+        deck.add_slide(
+            title="Closing",
+            content="```builtwith\nstars: false\n```",
+        )
+        html = build_deck(deck)
+
+        assert "colloquium-builtwith" in html
+        assert 'class="colloquium-builtwith-stars"' not in html
+
     def test_inlines_css_and_js(self):
         deck = Deck(title="Test")
         deck.add_slide(title="S1", content="Content")
@@ -101,6 +128,69 @@ class TestBuildDeck:
         assert ".align-center.active .slide-content > p > img {" in html
         assert "margin-left: auto;" in html
         assert "margin-right: auto;" in html
+
+    def test_figure_captions_wrap_standalone_images(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Figure",
+            content="![A *caption*](image.png)",
+            classes=["figure-captions"],
+        )
+        html = build_deck(deck)
+
+        assert '<figure class="colloquium-figure"><img src="image.png" alt="A caption" />' in html
+        assert '<figcaption class="colloquium-figure-caption">A caption</figcaption>' in html
+        assert 'content: "Figure " counter(colloquium-figure) ": ";' in html
+
+    def test_deck_level_figure_captions_enable_figures(self):
+        deck = Deck(title="Test", figure_captions=True)
+        deck.add_slide(title="Figure", content="![Caption](image.png)")
+        html = build_deck(deck)
+
+        assert '<figure class="colloquium-figure"><img src="image.png" alt="Caption" />' in html
+        assert '<figcaption class="colloquium-figure-caption">Caption</figcaption>' in html
+
+    def test_no_figure_captions_class_overrides_deck_default(self):
+        deck = Deck(title="Test", figure_captions=True)
+        deck.add_slide(title="Figure", content="![Caption](image.png)", classes=["no-figure-captions"])
+        html = build_deck(deck)
+
+        assert '<figure class="colloquium-figure">' not in html
+        assert '<p><img src="image.png" alt="Caption" /></p>' in html
+
+    def test_figure_captions_omit_empty_alt_text(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Figure",
+            content="![](image.png)",
+            classes=["figure-captions"],
+        )
+        html = build_deck(deck)
+
+        assert '<p><img src="image.png" alt="" /></p>' in html
+        assert '<figure class="colloquium-figure">' not in html
+        assert "colloquium-figure-caption" not in html
+
+    def test_figure_captions_preserve_grid_image_layout_hooks(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Grid",
+            content="![Caption](demo.png)\n\n|||\n\nText",
+            classes=["cols-2", "figure-captions", "img-valign-bottom"],
+        )
+        html = build_deck(deck)
+
+        assert ".slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child," in html
+        assert ".slide.img-valign-bottom .colloquium-grid > .col:has(> figure.colloquium-figure:first-child:last-child)," in html
+        assert ".slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img," in html
+
+    def test_figure_captions_include_runtime_fit_helper(self):
+        deck = Deck(title="Test", figure_captions=True)
+        deck.add_slide(title="Figure", content="![Caption](image.png)")
+        html = build_deck(deck)
+
+        assert "window.colloquiumFitCaptionedFiguresIn = function(root)" in html
+        assert '.slide-content > figure.colloquium-figure:first-child:last-child' in html
 
     def test_slide_classes(self):
         deck = Deck(title="Test")
@@ -352,6 +442,8 @@ class TestBuildDeck:
         assert "object-position: center center;" in html
         assert ".slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img) > img," in html
         assert "object-position: bottom center;" in html
+        assert ".slide .colloquium-grid > .col > p:first-child:last-child:has(> img) > img," in html
+        assert "height: 100%;" in html
 
     def test_chart_print_image_hidden_on_screen(self):
         deck = Deck(title="Test")
@@ -490,6 +582,17 @@ class TestConversationRendering:
 
         assert "<strong>bold</strong>" in html
         assert "<code>code</code>" in html
+
+    def test_conversation_preserves_line_breaks(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Chat",
+            content="```conversation\nmessages:\n  - role: assistant\n    content: 'Line one\\nLine two'\n```",
+        )
+        html = build_deck(deck)
+
+        assert "Line one\nLine two" in html
+        assert "white-space: pre-line;" in html
 
     def test_invalid_yaml(self):
         deck = Deck(title="Test")
@@ -1079,3 +1182,23 @@ class TestCitationRendering:
         assert 'id="colloquium-footnote-1-right-2"' in html
         assert "1:" in html
         assert "2:" in html
+
+    def test_inline_footnote_can_contain_math_with_square_brackets(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content=(
+                "KL penalty.^[For discrete outputs, "
+                "$D_{\\mathrm{KL}}(\\pi \\| \\pi_{\\mathrm{ref}})="
+                "\\mathbb{E}_{y \\sim \\pi}\\!\\left[\\log \\pi(y \\mid x)-"
+                "\\log \\pi_{\\mathrm{ref}}(y \\mid x)\\right]$.]"
+            ),
+            metadata={"footnotes_position": "right"},
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert 'class="colloquium-footnote-ref"' in html
+        assert "\\left[" in html
+        assert "\\right]" in html
+        assert "colloquium-slide-footnote-text" in html
