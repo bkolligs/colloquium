@@ -12,7 +12,7 @@ from colloquium.slide import Slide
 
 # Directive patterns: <!-- key: value -->
 _DIRECTIVE_RE = re.compile(
-    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|footnotes|img-align|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
+    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|footnotes|img-align|img-valign|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
     re.DOTALL,
 )
 
@@ -24,6 +24,7 @@ _DIRECTIVE_CLASS_MAP = {
     "padding": lambda v: f"pad-{v}",
     "size": lambda v: f"size-{v}",
     "img-align": lambda v: f"img-align-{v}",
+    "img-valign": lambda v: f"img-valign-{v}",
     "img-fill": lambda v: "img-fill",
     "img-overflow": lambda v: "img-overflow",
 }

@@ -11,26 +11,27 @@ import time
 from pathlib import Path
 
 
-_COMMENT_TOKEN_RE = re.compile(r"<!--|-->")
+_COMMENT_OPEN_RE = re.compile(r"<!--")
+_COMMENT_CLOSE_RE = re.compile(r"-->")
 _FENCE_LINE_RE = re.compile(r"^(?:```|~~~)", re.MULTILINE)
 
 
-def _has_balanced_html_comments(text: str) -> bool:
-    """Return True when HTML comments are balanced in source order."""
-    balance = 0
-    for match in _COMMENT_TOKEN_RE.finditer(text):
-        token = match.group(0)
-        if token == "<!--":
-            balance += 1
-        else:
-            balance -= 1
-            if balance < 0:
-                return False
-    return balance == 0
+def _has_unclosed_html_comment(text: str) -> bool:
+    """Return True if the text ends inside an unclosed <!-- block.
+
+    Only checks whether the *last* ``<!--`` has a matching ``-->``.
+    Stray ``-->`` in content (e.g. arrow notation) is harmless.
+    """
+    last_open = -1
+    for m in _COMMENT_OPEN_RE.finditer(text):
+        last_open = m.start()
+    if last_open == -1:
+        return False
+    return _COMMENT_CLOSE_RE.search(text, last_open + 4) is None
 
 
-def _has_balanced_fenced_code_blocks(text: str) -> bool:
-    """Return True when triple-backtick and triple-tilde fences are balanced."""
+def _has_unclosed_fenced_code_block(text: str) -> bool:
+    """Return True if the text ends inside an unclosed fenced code block."""
     backticks = 0
     tildes = 0
     for match in _FENCE_LINE_RE.finditer(text):
@@ -39,7 +40,7 @@ def _has_balanced_fenced_code_blocks(text: str) -> bool:
             backticks += 1
         else:
             tildes += 1
-    return backticks % 2 == 0 and tildes % 2 == 0
+    return backticks % 2 != 0 or tildes % 2 != 0
 
 
 def _source_is_stable_for_rebuild(input_path: str) -> bool:
@@ -48,7 +49,14 @@ def _source_is_stable_for_rebuild(input_path: str) -> bool:
         text = Path(input_path).read_text(encoding="utf-8")
     except OSError:
         return False
-    return _has_balanced_html_comments(text) and _has_balanced_fenced_code_blocks(text)
+    if not text.strip():
+        return False
+    return not _has_unclosed_html_comment(text) and not _has_unclosed_fenced_code_block(text)
+
+
+# After this many seconds of "unstable", build anyway to avoid getting
+# permanently stuck.
+_MAX_STABLE_WAIT = 3.0
 
 
 def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.Event):
@@ -60,6 +68,7 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
     pending_since = 0.0
     debounce_seconds = 0.35
     waiting_for_stable_source = False
+    unstable_since = 0.0
 
     while not stop_event.is_set():
         try:
@@ -69,19 +78,28 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
                 pending_since = time.monotonic()
 
             if pending_mtime and time.monotonic() - pending_since >= debounce_seconds:
-                if not _source_is_stable_for_rebuild(input_path):
+                stable = _source_is_stable_for_rebuild(input_path)
+                timed_out = (
+                    unstable_since > 0
+                    and time.monotonic() - unstable_since >= _MAX_STABLE_WAIT
+                )
+
+                if not stable and not timed_out:
                     if not waiting_for_stable_source:
                         print("  Waiting for stable source before rebuild...")
                         waiting_for_stable_source = True
-                    continue
-
-                if last_mtime > 0:
-                    print(f"  Rebuilding {input_path}...")
-                build_file(input_path, output_path)
-                last_mtime = pending_mtime
-                pending_mtime = 0.0
-                pending_since = 0.0
-                waiting_for_stable_source = False
+                        unstable_since = time.monotonic()
+                else:
+                    if timed_out and not stable:
+                        print("  Stability wait timed out, rebuilding anyway.")
+                    if last_mtime > 0:
+                        print(f"  Rebuilding {input_path}...")
+                    build_file(input_path, output_path)
+                    last_mtime = pending_mtime
+                    pending_mtime = 0.0
+                    pending_since = 0.0
+                    waiting_for_stable_source = False
+                    unstable_since = 0.0
         except OSError:
             pass
         except Exception as e:
@@ -89,6 +107,7 @@ def _watch_and_rebuild(input_path: str, output_path: str, stop_event: threading.
             pending_mtime = 0.0
             pending_since = 0.0
             waiting_for_stable_source = False
+            unstable_since = 0.0
 
         stop_event.wait(timeout=0.15)
 

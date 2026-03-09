@@ -188,6 +188,11 @@ class TestParseSlide:
         slide = parse_slide(text)
         assert "img-overflow" in slide.classes
 
+    def test_img_valign_directive(self):
+        text = "<!-- img-valign: bottom -->\n## Slide\n\n![Alt](figure.png)"
+        slide = parse_slide(text)
+        assert "img-valign-bottom" in slide.classes
+
     def test_multiple_directives(self):
         text = "<!-- align: center -->\n<!-- size: large -->\n<!-- padding: compact -->\n## Slide\n\nContent"
         slide = parse_slide(text)

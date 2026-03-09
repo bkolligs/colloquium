@@ -20,6 +20,18 @@ class TestBuildDeck:
         assert "Hello" in html
         assert "World" in html
 
+    def test_slide_titles_support_inline_markdown(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="What is **RLHF** with *verifiable* [rewards](https://example.com)?",
+            content="Body",
+        )
+        html = build_deck(deck)
+
+        assert "<strong>RLHF</strong>" in html
+        assert "<em>verifiable</em>" in html
+        assert '<a href="https://example.com">' in html
+
     def test_contains_katex(self):
         deck = Deck(title="Math")
         deck.add_slide(title="Equations", content="$E = mc^2$")
@@ -311,6 +323,20 @@ class TestBuildDeck:
         assert ".img-align-right .slide-content img {\n    display: block;" in html
         assert ".img-align-right .slide-content img { margin-left: auto; }" in html
         assert ".img-align-center .slide-content { display: flex;" not in html
+
+    def test_grid_images_top_align_by_default_with_img_valign_overrides(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Grid",
+            content="![alt](demo.png)\n\n|||\n\nText",
+            classes=["cols-2", "img-valign-bottom"],
+        )
+        html = build_deck(deck)
+
+        assert ".slide .colloquium-grid > .col > p:first-child:last-child:has(> img)," in html
+        assert "align-items: flex-start;" in html
+        assert ".slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img)," in html
+        assert "align-items: flex-end;" in html
 
     def test_chart_print_image_hidden_on_screen(self):
         deck = Deck(title="Test")

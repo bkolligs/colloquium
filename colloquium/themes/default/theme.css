@@ -614,12 +614,27 @@ html, body {
 .slide .colloquium-grid > .col > p:first-child:last-child:has(> img),
 .slide .colloquium-row > p:first-child:last-child:has(> img) {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     width: 100%;
     height: 100%;
     margin: 0;
     overflow: hidden;
+}
+
+.slide.img-valign-top .colloquium-grid > .col > p:first-child:last-child:has(> img),
+.slide.img-valign-top .colloquium-row > p:first-child:last-child:has(> img) {
+    align-items: flex-start;
+}
+
+.slide.img-valign-center .colloquium-grid > .col > p:first-child:last-child:has(> img),
+.slide.img-valign-center .colloquium-row > p:first-child:last-child:has(> img) {
+    align-items: center;
+}
+
+.slide.img-valign-bottom .colloquium-grid > .col > p:first-child:last-child:has(> img),
+.slide.img-valign-bottom .colloquium-row > p:first-child:last-child:has(> img) {
+    align-items: flex-end;
 }
 
 .slide .colloquium-grid > .col > p:first-child:last-child:has(> img) > img,

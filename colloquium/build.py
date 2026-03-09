@@ -714,7 +714,8 @@ def _build_slide_html(
     parts = []
     if slide.title:
         tag = "h1" if slide.is_title_slide else "h2"
-        parts.append(f"<{tag}>{slide.title}</{tag}>")
+        title_html = _render_inline_markdown(slide.title, md)
+        parts.append(f"<{tag}>{title_html}</{tag}>")
 
     has_columns = any(c.startswith("cols-") for c in slide.classes)
     has_rows = any(c.startswith("rows-") for c in slide.classes)
