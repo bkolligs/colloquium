@@ -1000,24 +1000,40 @@ body:hover .colloquium-present {
     font-weight: 600;
 }
 
-/* ===== Per-Slide Citation Footnotes ===== */
-.colloquium-slide-cite {
+/* ===== Per-Slide Footnote Area ===== */
+.colloquium-slide-meta {
     position: absolute;
     bottom: 40px;
     font-size: 11px;
     color: var(--colloquium-muted);
-    max-width: 60%;
+    max-width: 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+    z-index: 4;
+}
+
+.colloquium-slide-meta--left {
+    left: 24px;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.colloquium-slide-meta--right {
+    right: 24px;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.colloquium-slide-cite,
+.colloquium-slide-footnote {
+    max-width: 100%;
+}
+
+.colloquium-slide-cite {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.colloquium-slide-cite--left {
-    left: 24px;
-}
-
-.colloquium-slide-cite--right {
-    right: 24px;
 }
 
 .colloquium-slide-cite a.colloquium-cite {
@@ -1027,6 +1043,25 @@ body:hover .colloquium-present {
 
 .colloquium-slide-cite a.colloquium-cite:hover {
     color: var(--colloquium-heading);
+}
+
+.colloquium-slide-footnote {
+    line-height: 1.35;
+}
+
+.colloquium-slide-footnote > :first-child {
+    margin-top: 0;
+}
+
+.colloquium-slide-footnote > :last-child {
+    margin-bottom: 0;
+}
+
+.colloquium-slide-meta--right .colloquium-slide-footnote ul,
+.colloquium-slide-meta--right .colloquium-slide-footnote ol {
+    padding-right: 1.2em;
+    padding-left: 0;
+    list-style-position: inside;
 }
 
 /* ===== References Slide ===== */

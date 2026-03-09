@@ -133,6 +133,16 @@ class TestParseSlide:
         slide = parse_slide(text)
         assert not any(cls.startswith("cols-") for cls in slide.classes)
 
+    def test_footnote_directive(self):
+        text = "<!-- footnote: Base models are becoming more flexible -->\n## Slide\n\nContent"
+        slide = parse_slide(text)
+        assert slide.metadata.get("footnote_left") == "Base models are becoming more flexible"
+
+    def test_footnote_right_directive(self):
+        text = "<!-- footnote-right: Right aligned note -->\n## Slide\n\nContent"
+        slide = parse_slide(text)
+        assert slide.metadata.get("footnote_right") == "Right aligned note"
+
     def test_rows_equal(self):
         text = "<!-- rows: 2 -->\n## Slide\n\nTop\n\n===\n\nBottom"
         slide = parse_slide(text)

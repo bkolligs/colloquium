@@ -440,14 +440,13 @@ def _build_footer_html(footer: dict | None, index: int, total: int) -> str:
 
 def _build_slide_cite_html(
     keys: list,
-    position: str,
     bib_entries: dict,
     style: str,
     cited_keys: list,
     citation_order: str = "auto",
     citation_numbers: dict[str, int] | None = None,
 ) -> str:
-    """Build a per-slide floating citation footnote."""
+    """Build per-slide citation links."""
     if not keys or not bib_entries:
         return ""
     keys = _ordered_citation_keys(keys, bib_entries, style, citation_order, citation_numbers)
@@ -463,11 +462,39 @@ def _build_slide_cite_html(
             )
     if not labels:
         return ""
-    return (
-        f'<div class="colloquium-slide-cite colloquium-slide-cite--{position}">'
-        + "; ".join(labels)
-        + '</div>'
+    return f'<div class="colloquium-slide-cite">{"; ".join(labels)}</div>'
+
+
+def _build_slide_footnote_html(text: str, md: MarkdownIt) -> str:
+    """Build per-slide floating footnote content."""
+    if not text or not text.strip():
+        return ""
+    rendered = _render_markdown(text.strip(), md).strip()
+    if not rendered:
+        return ""
+    return f'<div class="colloquium-slide-footnote">{rendered}</div>'
+
+
+def _build_slide_meta_stack_html(
+    position: str,
+    cite_keys: list,
+    footnote_text: str,
+    bib_entries: dict,
+    style: str,
+    cited_keys: list,
+    md: MarkdownIt,
+    citation_order: str = "auto",
+    citation_numbers: dict[str, int] | None = None,
+) -> str:
+    """Build the floating left/right footnote area for a slide."""
+    cite_html = _build_slide_cite_html(
+        cite_keys, bib_entries, style, cited_keys, citation_order, citation_numbers
     )
+    footnote_html = _build_slide_footnote_html(footnote_text, md)
+    if not cite_html and not footnote_html:
+        return ""
+    inner = "".join(part for part in (cite_html, footnote_html) if part)
+    return f'<div class="colloquium-slide-meta colloquium-slide-meta--{position}">{inner}</div>'
 
 
 _ROW_SPLIT_RE = re.compile(r"^\s*===+\s*$", re.MULTILINE)
@@ -596,18 +623,34 @@ def _build_slide_html(
     # Per-slide citation footnotes (floating above footer)
     cite_left = slide.metadata.get("cite_left", [])
     cite_right = slide.metadata.get("cite_right", [])
-    if cite_left:
-        parts.append(
-            _build_slide_cite_html(
-                cite_left, "left", bib_entries, citation_style, cited_keys, citation_order, citation_numbers,
-            )
-        )
-    if cite_right:
-        parts.append(
-            _build_slide_cite_html(
-                cite_right, "right", bib_entries, citation_style, cited_keys, citation_order, citation_numbers,
-            )
-        )
+    footnote_left = slide.metadata.get("footnote_left", "")
+    footnote_right = slide.metadata.get("footnote_right", "")
+    left_meta = _build_slide_meta_stack_html(
+        "left",
+        cite_left,
+        footnote_left,
+        bib_entries,
+        citation_style,
+        cited_keys,
+        md,
+        citation_order,
+        citation_numbers,
+    )
+    right_meta = _build_slide_meta_stack_html(
+        "right",
+        cite_right,
+        footnote_right,
+        bib_entries,
+        citation_style,
+        cited_keys,
+        md,
+        citation_order,
+        citation_numbers,
+    )
+    if left_meta:
+        parts.append(left_meta)
+    if right_meta:
+        parts.append(right_meta)
 
     parts.append(_build_footer_html(footer, index, total))
 

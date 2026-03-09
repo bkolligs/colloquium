@@ -81,8 +81,11 @@ def serve(input_path: str, port: int = 8080, output_dir: str | None = None):
         def log_message(self, format, *args):
             pass
 
+    class ReusableTCPServer(socketserver.TCPServer):
+        allow_reuse_address = True
+
     try:
-        with socketserver.TCPServer(("", port), QuietHandler) as httpd:
+        with ReusableTCPServer(("", port), QuietHandler) as httpd:
             url = f"http://localhost:{port}/{stem}.html"
             print(f"  Serving at {url}")
             print(f"  Watching for changes... (Ctrl+C to stop)")

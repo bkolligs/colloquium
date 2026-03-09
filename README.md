@@ -372,6 +372,15 @@ Base models are also becoming more flexible through midtraining and related data
 </div>
 ```
 
+For slide-level footnotes that sit above the footer, use directives:
+
+```markdown
+<!-- footnote: Base models are also becoming more flexible through midtraining. -->
+<!-- footnote-right: Right-aligned note for this slide. -->
+```
+
+These share the same bottom-left / bottom-right area as floating citations, with citations stacked above the footnote when both are present.
+
 ### Charts
 
 Inline charts via Chart.js using YAML in fenced code blocks:

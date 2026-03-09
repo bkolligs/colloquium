@@ -904,7 +904,7 @@ class TestCitationRendering:
             deck.slides.append(slide)
             html = build_deck(deck)
 
-            assert "colloquium-slide-cite--left" in html
+            assert "colloquium-slide-meta--left" in html
             assert "Smith" in html
 
     def test_per_slide_cite_right_renders(self):
@@ -919,7 +919,7 @@ class TestCitationRendering:
             deck.slides.append(slide)
             html = build_deck(deck)
 
-            assert "colloquium-slide-cite--right" in html
+            assert "colloquium-slide-meta--right" in html
             assert "Jones" in html
 
     def test_per_slide_cite_default_order_is_alphabetical(self):
@@ -935,3 +935,36 @@ class TestCitationRendering:
             html = build_deck(deck)
 
             assert html.index("Jones") < html.index("Smith")
+
+    def test_per_slide_footnote_left_renders(self):
+        deck = Deck(title="Test")
+        slide = Slide(
+            title="Intro",
+            content="Some content.",
+            metadata={"footnote_left": "Base models are becoming more flexible."},
+        )
+        deck.slides.append(slide)
+        html = build_deck(deck)
+
+        assert "colloquium-slide-meta--left" in html
+        assert "colloquium-slide-footnote" in html
+        assert "Base models are becoming more flexible." in html
+
+    def test_per_slide_footnote_and_cite_share_stack(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = self._make_bib(tmpdir)
+            deck = Deck(title="Test", bibliography=bib_path)
+            slide = Slide(
+                title="Intro",
+                content="Some content.",
+                metadata={
+                    "cite_right": ["smith2024"],
+                    "footnote_right": "Midtraining also matters.",
+                },
+            )
+            deck.slides.append(slide)
+            html = build_deck(deck)
+
+            assert html.count('class="colloquium-slide-meta colloquium-slide-meta--right"') == 1
+            assert "Midtraining also matters." in html
+            assert "Smith" in html
