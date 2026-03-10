@@ -6,7 +6,7 @@ It uses only built-in Colloquium title layouts and built-in title utility classe
 Files:
 
 - `title-slides.md` — the source deck
-- `title-slides.html` — the built preview
+- build locally with `uv run colloquium build examples/title-slides/title-slides.md`
 
 ## Built-in Title Layouts
 
