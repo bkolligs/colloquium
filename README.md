@@ -6,11 +6,23 @@ Markdown-based slide creation tool for research talks. Git-friendly, AI-drivable
 
 Colloquium uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python package management.
 
+### Latest release
+
 ```bash
+uv tool install colloquium
+# or inside a project
+uv pip install colloquium
+```
+
+### Unreleased main
+
+```bash
+uv tool install --from git+https://github.com/natolambert/colloquium colloquium
+# or inside a project
 uv pip install git+https://github.com/natolambert/colloquium.git
 ```
 
-Or for development:
+### Development
 
 ```bash
 git clone https://github.com/natolambert/colloquium.git
@@ -65,6 +77,10 @@ colloquium build slides.md        # → slides.html
 colloquium serve slides.md        # dev server with live reload
 colloquium export slides.md       # PDF via a headless Chromium-based browser
 ```
+
+Rendered docs and examples live at:
+
+- `https://natolambert.github.io/colloquium/`
 
 ## CLI Commands
 
@@ -282,9 +298,9 @@ At the slide root, use either `columns:` or `rows:`. For nested layouts, use `ro
 | `<!-- img-fill: true -->` | Expand image to fill available slide space |
 | `<!-- img-overflow: true -->` | Let images in grid cells bleed outside their box instead of fitting inside |
 
-See [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions using the built-in title layouts, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste guidance on when to use each layout, [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts, and [`examples/footnotes/footnotes.md`](./examples/footnotes/footnotes.md) for numbered inline footnotes and floating slide notes.
+See [`examples/hello/README.md`](./examples/hello/README.md) for the broad feature tour, [`examples/title-slides/title-slides.md`](./examples/title-slides/title-slides.md) for concrete title-slide compositions, [`examples/title-slides/README.md`](./examples/title-slides/README.md) for copy-paste title guidance, [`examples/rows-and-columns/rows-and-columns.md`](./examples/rows-and-columns/rows-and-columns.md) for nested row/column layouts, and [`examples/footnotes/footnotes.md`](./examples/footnotes/footnotes.md) for numbered inline footnotes and floating slide notes.
 
-Generated example HTML is not tracked in git. Build any example locally with `uv run colloquium build examples/.../*.md`.
+Generated example HTML/PDF/PPTX is not tracked in git. Build any example locally with `uv run colloquium build examples/.../*.md`, or generate the small project website with `uv run python docs/build.py`.
 
 ### Bibliography
 
@@ -517,9 +533,19 @@ Optional box settings:
 |-----|---------|-------------|
 | `title` | unset | Bold heading shown at the top of the box |
 | `tone` | `accent` | Visual style: `accent`, `muted`, or `surface` |
+| `content` | unset | Optional markdown body below the title |
 | `size` | unset | Font scale as a positive numeric value like `0.9` or `1.05` |
 | `align` | unset | Text alignment inside the box: `left`, `center`, or `right` |
 | `compact` | `false` | Tighten paragraph and list spacing inside the box |
+
+`box` supports a title-only callout too:
+
+````markdown
+```box
+title: Core idea
+tone: accent
+```
+````
 
 The supported tones are:
 
@@ -609,11 +635,17 @@ This produces a reasonable starting point, but some colloquium features lose fid
 Two options:
 
 1. **Browser**: Open the HTML file and `Cmd+P` / `Ctrl+P` — print CSS makes all slides visible with page breaks, footers with slide numbers included
-2. **CLI**: `colloquium export slides.md` uses headless Chrome
+2. **CLI**: `colloquium export slides.md` uses a headless Chromium-based browser
 
 ## Output
 
 Everything builds to a single self-contained HTML file. CSS and JS are inlined; math (KaTeX) and code highlighting (highlight.js) load from CDN.
+
+## Release Process
+
+- Changelog: [`CHANGELOG.md`](./CHANGELOG.md)
+- Release checklist: [`RELEASING.md`](./RELEASING.md)
+- Website/examples builder: `uv run python docs/build.py`
 
 ## Contributing Elements
 

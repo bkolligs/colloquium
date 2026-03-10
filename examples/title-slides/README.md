@@ -1,12 +1,11 @@
 # Title Slides
 
-This example deck is meant to be copied into real talks.
-It uses only built-in Colloquium title layouts and built-in title utility classes.
+Copy these built-in title layouts into real talks when you want a stronger opening slide without custom CSS.
 
 Files:
 
 - `title-slides.md` — the source deck
-- `title-slides.html` — the built preview
+- build locally with `uv run colloquium build examples/title-slides/title-slides.md`
 
 ## Built-in Title Layouts
 
