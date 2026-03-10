@@ -275,6 +275,8 @@ At the slide root, use either `columns:` or `rows:`. For nested layouts, use `ro
 | `<!-- class: name1 name2 -->` | Add CSS classes to the slide |
 | `<!-- style: css-here -->` | Inline CSS on the slide element |
 | `<!-- notes: text -->` | Speaker notes (hidden in presentation) |
+| `<!-- class: figure-captions -->` | Turn standalone markdown images on that slide into numbered figures with captions taken from `![alt](...)` |
+| `<!-- class: no-figure-captions -->` | Disable deck-wide figure captions for a specific slide |
 | `<!-- img-align: center -->` | Align images only (`left`, `center`, `right`) — title unaffected |
 | `<!-- img-valign: top -->` | Vertically align standalone images in grid/row cells (`top`, `center`, `bottom`) |
 | `<!-- img-fill: true -->` | Expand image to fill available slide space |
@@ -307,6 +309,34 @@ citation_order: auto
 **Tables** — standard markdown tables
 
 **Images** — `![alt](url)` with automatic sizing (SVG supported for vector graphics)
+
+To enable numbered figure captions across a whole deck, add this to frontmatter:
+
+```yaml
+figure_captions: true
+```
+
+Standalone markdown images will render as numbered figures, using the alt text as the caption:
+
+```markdown
+![Training recipe overview](assets/recipe.png)
+```
+
+This renders as `Figure 1: Training recipe overview`. Leave the alt text empty to suppress the caption:
+
+```markdown
+![](assets/recipe.png)
+```
+
+If you only want captions on selected slides, use `figure-captions` as a slide class instead:
+
+```markdown
+<!-- class: figure-captions -->
+
+![Training recipe overview](assets/recipe.png)
+```
+
+If the deck enables `figure_captions: true`, add `no-figure-captions` to a slide to opt that slide out.
 
 ### Text Sizes
 
@@ -444,7 +474,7 @@ messages:
   - role: user
     content: "What is RLHF?"
   - role: assistant
-    model: "Tulu 3 405B"
+    model: "Tülu 3 405B"
     content: "**RLHF** is a technique for aligning language models..."
   - role: system
     content: "You are a helpful AI assistant."
@@ -465,6 +495,64 @@ Optional conversation settings:
 |-----|---------|-------------|
 | `size` | unset | Bubble font scale as a positive numeric value like `0.9` or `1.05` |
 | `messages[].model` | unset | Optional model label shown next to the role, e.g. `ASSISTANT (Llama 3.1 405B Base)` |
+
+### Boxes
+
+Render a rounded callout card using YAML in fenced code blocks:
+
+````markdown
+```box
+title: DPO became popular because:
+tone: accent
+content: |
+  - Far simpler to implement
+  - Far cheaper to run
+  - Often reaches most of the final performance
+```
+````
+
+Optional box settings:
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `title` | unset | Bold heading shown at the top of the box |
+| `tone` | `accent` | Visual style: `accent`, `muted`, or `surface` |
+| `size` | unset | Font scale as a positive numeric value like `0.9` or `1.05` |
+| `align` | unset | Text alignment inside the box: `left`, `center`, or `right` |
+| `compact` | `false` | Tighten paragraph and list spacing inside the box |
+
+The supported tones are:
+
+| Tone | Use |
+|------|-----|
+| `accent` | High-contrast highlight box using the deck accent color |
+| `muted` | Softer supporting card using the code/background surface |
+| `surface` | Neutral bordered panel for references, caveats, or side notes |
+
+### Built With Badge
+
+Render a compact GitHub badge anywhere in a slide using the normal layout tools:
+
+````markdown
+<!-- align: right -->
+<!-- valign: bottom -->
+
+```builtwith
+repo: natolambert/colloquium
+```
+````
+
+Optional settings:
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `label` | `"Built with"` | Small label above the repo name |
+| `repo` | `"natolambert/colloquium"` | GitHub repository slug |
+| `url` | `https://github.com/<repo>` | Link target override |
+| `stars` | `auto` | Fetch GitHub stars automatically, hide with `false`, or pin a numeric value |
+| `icon` | `true` | Show/hide the GitHub icon |
+
+Because it is a normal block element, you can place it with columns, rows, alignment utilities, or raw HTML wrappers instead of relying on footer-specific behavior.
 
 ### Citations
 

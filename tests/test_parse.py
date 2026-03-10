@@ -30,6 +30,12 @@ class TestParseFrontmatter:
         assert meta["theme"] == "dark"
         assert meta["aspect_ratio"] == "4:3"
 
+    def test_figure_captions_field(self):
+        text = "---\ntitle: Talk\nfigure_captions: true\n---\nBody"
+        meta, body = parse_frontmatter(text)
+        assert meta["figure_captions"] is True
+        assert body == "Body"
+
 
 class TestParseSlide:
     def test_basic_slide(self):
@@ -276,3 +282,8 @@ Some math: $E = mc^2$
         text = "---\ntitle: Talk\ncitation_order: appearance\n---\n\n## S1\n\nContent"
         deck = parse_markdown(text)
         assert deck.citation_order == "appearance"
+
+    def test_figure_captions_frontmatter_parsed(self):
+        text = "---\ntitle: Talk\nfigure_captions: true\n---\n\n## S1\n\n![Caption](image.png)"
+        deck = parse_markdown(text)
+        assert deck.figure_captions is True

@@ -24,6 +24,7 @@ class Deck:
         bibliography: str = "",
         citation_style: str = "author-year",
         citation_order: str = "auto",
+        figure_captions: bool = False,
     ):
         self.title = title
         self.author = author
@@ -36,6 +37,7 @@ class Deck:
         self.bibliography = bibliography
         self.citation_style = citation_style
         self.citation_order = citation_order
+        self.figure_captions = figure_captions
         self.slides: list[Slide] = []
 
     def add_slide(
@@ -153,6 +155,8 @@ class Deck:
             lines.append(f"citation_style: {self.citation_style}")
         if self.citation_order != "auto":
             lines.append(f"citation_order: {self.citation_order}")
+        if self.figure_captions:
+            lines.append("figure_captions: true")
         lines.append("---")
 
         for slide in self.slides:

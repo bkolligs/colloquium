@@ -12,7 +12,7 @@ from colloquium.slide import Slide
 
 # Directive patterns: <!-- key: value -->
 _DIRECTIVE_RE = re.compile(
-    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-right|footnote|footnote-right|footnotes|img-align|img-valign|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
+    r"<!--\s*(layout|class|style|notes|title|align|valign|columns|rows|padding|size|cite|cite-left|cite-right|footnote|footnote-right|footnotes|img-align|img-valign|img-fill|img-overflow)\s*:\s*(.*?)\s*-->",
     re.DOTALL,
 )
 
@@ -92,7 +92,7 @@ def parse_slide(text: str) -> Slide:
             style = value
         elif key == "notes":
             notes = value
-        elif key == "cite":
+        elif key in {"cite", "cite-left"}:
             metadata.setdefault("cite_left", []).extend(
                 k.strip() for k in value.split(",") if k.strip()
             )
@@ -163,6 +163,7 @@ def parse_markdown(text: str) -> Deck:
         bibliography=metadata.get("bibliography", ""),
         citation_style=metadata.get("citation_style", "author-year"),
         citation_order=metadata.get("citation_order", "auto"),
+        figure_captions=bool(metadata.get("figure_captions", False)),
     )
 
     # Split on --- slide separators (horizontal rules)
