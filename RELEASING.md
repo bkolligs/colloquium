@@ -18,7 +18,7 @@ This document is the manual checklist for a release.
 
    ```bash
    uv run pytest
-   uv run python scripts/build_examples_site.py
+   uv run python docs/build.py
    uv run colloquium build examples/hello/hello.md
    uv run colloquium export examples/hello/hello.md
    ```
