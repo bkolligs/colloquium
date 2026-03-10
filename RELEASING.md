@@ -2,11 +2,6 @@
 
 This document is the manual checklist for a release.
 
-## Before the first release
-
-1. Enable GitHub Pages for the repository.
-2. Confirm the website workflow can deploy from `main`.
-
 ## Release checklist
 
 1. Make sure `main` is clean and up to date.
@@ -39,6 +34,17 @@ This document is the manual checklist for a release.
    ```
 
 8. Confirm the `Website` workflow has deployed the latest site.
+
+## Changelog convention
+
+Every PR must add a line to the `[Unreleased]` section of `CHANGELOG.md` (enforced by CI).
+Format: one line per PR, ending with the PR number.
+
+```
+- Short description of the change (#42)
+```
+
+At release time, move the `[Unreleased]` lines into a dated section. The flat list copies directly into GitHub release notes.
 
 ## Notes
 
