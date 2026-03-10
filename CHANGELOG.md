@@ -11,6 +11,8 @@ One line per PR for easy copy into GitHub releases.
 
 ## [Unreleased]
 
+- Enable typographic replacements: `--` to en-dash, `---` to em-dash, smart quotes (#15)
+
 ## [0.2.0] - 2026-03-10
 
 - Add GitHub Pages website with rendered example decks and CI workflows (#13)
