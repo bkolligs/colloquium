@@ -314,6 +314,7 @@ content: |
 ```box
 title: Surface
 tone: surface
+compact: true
 content: |
   Neutral bordered panel for references or caveats.
 

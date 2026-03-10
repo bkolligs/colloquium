@@ -519,6 +519,7 @@ Optional box settings:
 | `tone` | `accent` | Visual style: `accent`, `muted`, or `surface` |
 | `size` | unset | Font scale as a positive numeric value like `0.9` or `1.05` |
 | `align` | unset | Text alignment inside the box: `left`, `center`, or `right` |
+| `compact` | `false` | Tighten paragraph and list spacing inside the box |
 
 The supported tones are:
 

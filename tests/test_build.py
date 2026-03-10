@@ -230,6 +230,25 @@ class TestBuildDeck:
         assert "Invalid box YAML" not in html
         assert "DPO became very popular as it is:" in html
 
+    def test_box_element_compact_option_renders_class(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Box",
+            content=(
+                "```box\n"
+                "title: Compact\n"
+                "tone: muted\n"
+                "compact: true\n"
+                "content: |\n"
+                "  - One\n"
+                "  - Two\n"
+                "```"
+            ),
+        )
+        html = build_deck(deck)
+
+        assert "colloquium-box--compact" in html
+
     def test_slide_classes(self):
         deck = Deck(title="Test")
         deck.add_slide(title="S1", content="C", classes=["highlight"])

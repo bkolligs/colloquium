@@ -12,7 +12,7 @@ PATTERN = re.compile(
 )
 
 _block_md = MarkdownIt("commonmark", {"html": True})
-_SIMPLE_SCALAR_RE = re.compile(r"^(title|tone|align|size):\s*(.+?)\s*$")
+_SIMPLE_SCALAR_RE = re.compile(r"^(title|tone|align|size|compact):\s*(.+?)\s*$")
 
 
 def reset() -> None:
@@ -66,10 +66,13 @@ def process(yaml_str: str) -> str:
     tone = str(spec.get("tone", "accent")).strip().lower() or "accent"
     size_value = spec.get("size")
     align = str(spec.get("align", "")).strip().lower()
+    compact_value = spec.get("compact", False)
 
     classes = ["colloquium-box", f"colloquium-box--{html_module.escape(tone)}"]
     if align in {"left", "center", "right"}:
         classes.append(f"colloquium-box--align-{align}")
+    if compact_value:
+        classes.append("colloquium-box--compact")
 
     style_attr = ""
     if size_value not in {None, ""}:
