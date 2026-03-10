@@ -3,6 +3,11 @@ name: Website
 on:
   push:
     branches: [main]
+    paths:
+      - "colloquium/**"
+      - "examples/**"
+      - "docs/**"
+      - "pyproject.toml"
   workflow_dispatch:
 
 permissions:

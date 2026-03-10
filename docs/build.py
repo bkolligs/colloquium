@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import html
 import json
+import logging
 import re
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -19,6 +20,7 @@ from colloquium.build import build_file
 from colloquium.export import export_pdf
 from colloquium.parse import parse_file
 
+logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES_DIR = REPO_ROOT / "examples"
@@ -38,6 +40,7 @@ class Example:
     readme_path: Path | None
     summary: str
     docs_html: str
+    has_pdf: bool = field(default=False, init=False)
 
 
 _FIRST_HEADING_RE = re.compile(r"^\s*<h[1-3][^>]*>.*?</h[1-3]>\s*", re.DOTALL)
@@ -182,7 +185,7 @@ pre {
 .inline-preview {
   overflow: hidden;
   border: 1px solid #dfe3f0;
-  border-radius: 12px;
+  border-radius: 2px;
   background: #ffffff;
 }
 .preview-panel iframe,
@@ -200,45 +203,48 @@ pre {
   height: 100%;
 }
 .inline-notes {
-  margin-top: 0.85rem;
-  color: #38405b;
-}
-.inline-notes details {
-  padding-left: 0;
+  margin-top: 0.5rem;
 }
 .inline-notes summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   cursor: pointer;
-  color: #2f4ca0;
+  color: #38405b;
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1.02rem;
-  margin-bottom: 0.35rem;
   list-style: none;
+  user-select: none;
 }
-.inline-notes summary::-webkit-details-marker {
-  display: none;
+.inline-notes summary:hover { color: #2f4ca0; }
+.inline-notes summary::-webkit-details-marker { display: none; }
+.inline-notes summary svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.1em;
+  margin-left: 0.2em;
+  transition: transform 150ms ease;
 }
-.inline-notes summary::before {
-  content: "▸";
-  display: inline-block;
-  width: 0.7em;
-  color: #2f4ca0;
-  transform-origin: 40% 50%;
-  transition: transform 120ms ease;
+.inline-notes[open] summary svg {
+  transform: rotate(180deg);
 }
-.inline-notes details[open] summary::before {
-  transform: rotate(90deg);
+.inline-notes-body {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid #d6dbeb;
+  color: #5b6380;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
-.inline-notes details[open] summary {
-  margin-bottom: 0.65rem;
+.inline-notes-body > *:first-child { margin-top: 0; }
+.inline-notes-body > *:last-child { margin-bottom: 0; }
+.inline-notes-body h1, .inline-notes-body h2, .inline-notes-body h3 {
+  font-size: 0.95rem;
+  color: #38405b;
+  margin: 0.5rem 0 0.25rem;
 }
-.inline-notes h1:first-child,
-.inline-notes h2:first-child,
-.inline-notes h3:first-child {
-  margin-top: 0;
+.inline-notes-body ul, .inline-notes-body ol {
+  padding-left: 1.2rem;
+  margin: 0.35rem 0;
 }
+.inline-notes-body a { color: #2f4ca0; }
 .footer-note {
   margin-top: 2.5rem;
   color: #6a728d;
@@ -267,6 +273,12 @@ def _page_shell(title: str, body: str) -> str:
 """
 
 
+def _pdf_link(example: Example, prefix: str = "") -> str:
+    if not example.has_pdf:
+        return ""
+    return f'<a href="{prefix}examples/{html.escape(example.slug)}/{html.escape(example.pdf_filename)}">PDF</a>'
+
+
 def _render_home_page(examples: list[Example], repo_stars: int | None) -> str:
     hello = next((example for example in examples if example.slug == "hello"), examples[0])
     others = [example for example in examples if example.slug != hello.slug]
@@ -280,15 +292,13 @@ def _render_home_page(examples: list[Example], repo_stars: int | None) -> str:
         for example in others
     )
     def notes_block(example: Example) -> str:
-        docs = example.docs_html or f"<p>{html.escape(example.summary)}</p>"
+        if not example.docs_html:
+            return ""
         return f"""
-        <div class="inline-notes">
-          <details>
-            <summary>More details</summary>
-            {docs}
-          </details>
-        </div>
-        """
+        <details class="inline-notes">
+          <summary>Click for more details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+          <div class="inline-notes-body">{example.docs_html}</div>
+        </details>"""
 
     items = "\n".join(
         f"""
@@ -297,7 +307,7 @@ def _render_home_page(examples: list[Example], repo_stars: int | None) -> str:
           <p>{html.escape(example.summary)}</p>
           <div class="example-links">
             <a href="examples/{html.escape(example.slug)}/{html.escape(example.deck_filename)}">Deck</a>
-            <a href="examples/{html.escape(example.slug)}/{html.escape(example.pdf_filename)}">PDF</a>
+            {_pdf_link(example)}
             <a href="{REPO_URL}/blob/main/{example.deck_path.relative_to(REPO_ROOT).as_posix()}">Source</a>
           </div>
           <div class="inline-preview">
@@ -350,7 +360,7 @@ uv run colloquium export examples/hello/hello.md  # export PDF via Chromium</cod
         <p>{html.escape(hello.summary)}</p>
         <div class="example-links">
           <a href="examples/{html.escape(hello.slug)}/{html.escape(hello.deck_filename)}">Deck</a>
-          <a href="examples/{html.escape(hello.slug)}/{html.escape(hello.pdf_filename)}">PDF</a>
+          {_pdf_link(hello)}
           <a href="{REPO_URL}/blob/main/{hello.deck_path.relative_to(REPO_ROOT).as_posix()}">Source</a>
         </div>
         <div class="inline-preview">
@@ -397,7 +407,11 @@ def build_examples_site(output_dir: Path = DEFAULT_OUTPUT_DIR, repo_stars: int |
         example_dir.mkdir(parents=True, exist_ok=True)
         deck_output = example_dir / example.deck_filename
         build_file(str(example.deck_path), str(deck_output))
-        export_pdf(str(deck_output), str(example_dir / example.pdf_filename))
+        pdf_output = str(example_dir / example.pdf_filename)
+        if export_pdf(str(deck_output), pdf_output) is not None:
+            example.has_pdf = True
+        else:
+            logger.warning("PDF export skipped for %s (no browser found)", example.slug)
         _copy_example_assets(example.deck_path.parent, example_dir)
 
     (output_dir / "index.html").write_text(
