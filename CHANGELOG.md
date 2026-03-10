@@ -11,11 +11,10 @@ One line per PR for easy copy into GitHub releases.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-10
+
 - Add GitHub Pages website with rendered example decks and CI workflows (#13)
 - Clean up README for launch: site link, simplified install, trim internals (#14)
-
-## [0.1.0] - 2026-03-10
-
 - Add mobile navigation, figure captions, and box callouts (#11)
 - Add inline footnotes, model labels, title markdown, img-valign, and harden live preview (#9)
 - Add rows/columns layouts, citation ordering, and conversation sizing (#6)
