@@ -1537,6 +1537,30 @@ body:hover .colloquium-present {
         page-break-after: auto;
     }
 
+    /* Display equations can be clipped inside printed columns even when the
+       right side of the slide has free space available. */
+    .slide .katex-display {
+        overflow: visible !important;
+    }
+
+    /* Hidden slides never get the runtime figure fit pass, so printed grid/row
+       figures need an explicit container-sized fallback. */
+    .slide .slide-content > figure.colloquium-figure:first-child:last-child,
+    .slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child,
+    .slide .colloquium-row > figure.colloquium-figure:first-child:last-child {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .slide .slide-content > figure.colloquium-figure:first-child:last-child > img,
+    .slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child > img,
+    .slide .colloquium-row > figure.colloquium-figure:first-child:last-child > img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: calc(720px - var(--colloquium-slide-padding) * 2 - 100px) !important;
+    }
+
     /* Printed slides are not .active, so re-apply layout/utility rules without that gate. */
     .slide--title,
     .slide--title-left,
