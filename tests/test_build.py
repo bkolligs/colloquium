@@ -120,6 +120,32 @@ class TestBuildDeck:
         assert ".valign-center { justify-content: center; }" in html
         assert ".slide--title-sidebar {" in html
 
+    def test_print_css_keeps_captioned_grid_figures_within_slide_bounds(self):
+        deck = Deck(title="Test", figure_captions=True)
+        deck.add_slide(
+            title="Columns",
+            content="Left\n\n|||\n\n![Alt](image.png)",
+            classes=["cols-45-55"],
+        )
+        html = build_deck(deck)
+
+        assert ".slide .colloquium-grid > .col > figure.colloquium-figure:first-child:last-child," in html
+        assert "width: 100% !important;" in html
+        assert "height: auto !important;" in html
+        assert "max-height: calc(720px - var(--colloquium-slide-padding) * 2 - 100px) !important;" in html
+
+    def test_print_css_allows_display_math_to_overflow_columns(self):
+        deck = Deck(title="Test")
+        deck.add_slide(
+            title="Math",
+            content="$$a + b + c + d + e + f + g$$",
+            classes=["cols-60-40"],
+        )
+        html = build_deck(deck)
+
+        assert ".slide .katex-display {" in html
+        assert "overflow: visible !important;" in html
+
     def test_align_center_centers_standalone_images(self):
         deck = Deck(title="Test")
         deck.add_slide(title="Centered", content="![Alt](image.png)", classes=["align-center"])
