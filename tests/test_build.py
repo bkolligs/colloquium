@@ -878,6 +878,28 @@ class TestCitationRendering:
             assert "{" not in result
             assert "}" not in result
 
+    def test_title_year_style_preserves_latex_macro_arguments(self):
+        bib_content = r"""@article{smith2024,
+  author = {Smith, John},
+  title = {An {\LaTeX{}} Guide},
+  journal = {Nature},
+  year = {2024},
+}
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = Path(tmpdir) / "refs.bib"
+            bib_path.write_text(bib_content)
+            bib_entries = _parse_bib_file(str(bib_path))
+            cited_keys = []
+
+            result = _process_citations(
+                "See [@smith2024] for details.",
+                bib_entries, "title-year", cited_keys,
+            )
+
+            assert r"\LaTeX{} Guide" in result
+            assert r"\LaTeX Guide" not in result
+
     def test_multiple_citations(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             bib_path = self._make_bib(tmpdir)
@@ -1124,6 +1146,30 @@ class TestCitationRendering:
             assert "<em>Transactions on ML</em>" in ref_html
             assert "{" not in ref_html
             assert "}" not in ref_html
+
+    def test_reference_preserves_latex_macro_arguments(self):
+        bib_content = r"""@article{smith2024,
+  author = {Smith, John},
+  title = {An {\LaTeX{}} Guide},
+  journal = {\textsc{ACL}},
+  year = {2024},
+}
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bib_path = Path(tmpdir) / "refs.bib"
+            bib_path.write_text(bib_content)
+            bib_entries = _parse_bib_file(str(bib_path))
+            cited_keys = ["smith2024"]
+
+            ref_slides = _build_references_slides_html(
+                bib_entries, cited_keys, "author-year", 5, 6, None,
+            )
+            ref_html = "\n".join(ref_slides)
+
+            assert r"<em>An \LaTeX{} Guide</em>" in ref_html
+            assert r"<em>\textsc{ACL}</em>" in ref_html
+            assert r"\LaTeX Guide" not in ref_html
+            assert r"\textscACL" not in ref_html
 
     def test_references_paginate(self):
         """Many references with long text should split across slides."""

@@ -125,8 +125,54 @@ def _get_year(entry) -> str:
 
 
 def _normalize_bibtex_field(text: str) -> str:
-    """Drop BibTeX grouping braces while preserving escaped literal braces."""
-    return re.sub(r"(?<!\\)[{}]", "", text).strip()
+    """Drop plain BibTeX grouping braces while preserving LaTeX macro arguments."""
+    result: list[str] = []
+    preserve_stack: list[bool] = []
+    preserve_next_group = False
+    i = 0
+
+    while i < len(text):
+        char = text[i]
+
+        if char == "\\":
+            # Preserve control words like \textsc and control symbols like \%.
+            result.append(char)
+            i += 1
+            if i < len(text):
+                result.append(text[i])
+                if text[i].isalpha():
+                    i += 1
+                    while i < len(text) and text[i].isalpha():
+                        result.append(text[i])
+                        i += 1
+                    preserve_next_group = True
+                    continue
+                preserve_next_group = True
+            continue
+
+        if char == "{":
+            preserve_group = preserve_next_group or (preserve_stack[-1] if preserve_stack else False)
+            preserve_stack.append(preserve_group)
+            if preserve_group:
+                result.append(char)
+            preserve_next_group = False
+            i += 1
+            continue
+
+        if char == "}":
+            preserve_group = preserve_stack.pop() if preserve_stack else False
+            if preserve_group:
+                result.append(char)
+            preserve_next_group = False
+            i += 1
+            continue
+
+        if not char.isspace():
+            preserve_next_group = False
+        result.append(char)
+        i += 1
+
+    return "".join(result).strip()
 
 
 def _get_title(entry) -> str:
